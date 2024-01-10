@@ -108,7 +108,7 @@ $user->hasPermission($permission);
 
 ```php
 // for permission
-Gate::authorize('role.show');
+Gate::authorize('show.role');
 
 // for role
 Gate::authorize('administrator');
@@ -116,7 +116,7 @@ Gate::authorize('administrator');
 
 ```php
 // for permission
-$this->authorize('role.show');
+$this->authorize('show.role');
 
 // for role
 $this->authorize('administrator');
@@ -124,7 +124,7 @@ $this->authorize('administrator');
 
 ```php
 // for permission
-middleware('can:role.show');
+middleware('can:show.role');
 
 // for role
 middleware('can:administrator');
@@ -132,7 +132,7 @@ middleware('can:administrator');
 
 ```blade
 // for permission
-@can('role.show')
+@can('show.role')
     It's works
 @endcan
 
