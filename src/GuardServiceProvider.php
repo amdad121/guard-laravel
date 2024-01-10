@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard;
 
-use AmdadulHaq\Guard\Middleware\EnsureUserHasRole;
 use AmdadulHaq\Guard\Models\Permission;
+use AmdadulHaq\Guard\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -28,8 +28,6 @@ class GuardServiceProvider extends PackageServiceProvider
 
     public function bootingPackage(): void
     {
-        app('router')->aliasMiddleware('role', EnsureUserHasRole::class);
-
         try {
             DB::connection()->getPdo();
 
@@ -41,6 +39,14 @@ class GuardServiceProvider extends PackageServiceProvider
                         return $user->hasPermission($permission);
                     });
                 }
+
+                foreach ($this->getRoles() as $role) {
+                    /** @phpstan-ignore-next-line */
+                    Gate::define($role->slug, function (User $user) use ($role) {
+                        /** @phpstan-ignore-next-line */
+                        return $user->hasRole($role->slug);
+                    });
+                }
             }
         } catch (\Exception $e) {
             // throw $e->getMessage();
@@ -50,5 +56,10 @@ class GuardServiceProvider extends PackageServiceProvider
     protected function getPermissions()
     {
         return Permission::with('roles')->get();
+    }
+
+    protected function getRoles()
+    {
+        return Role::get();
     }
 }
