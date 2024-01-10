@@ -79,7 +79,7 @@ $user->assignRole($role);
 $permission = Permission::first();
 
 // Assign permission
-$role->givePermissionTo($permission );
+$role->givePermissionTo($permission);
 ```
 
 ### Check Role and Permission
@@ -133,12 +133,12 @@ middleware('can:administrator');
 ```blade
 // for permission
 @can('role.show')
-It\'s works
+    It's works
 @endcan
 
 // for role
 @can('administrator')
-It\'s works
+    It's works
 @endcan
 ```
 
