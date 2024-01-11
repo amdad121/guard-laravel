@@ -10,7 +10,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -34,7 +33,7 @@ class GuardServiceProvider extends PackageServiceProvider
             if (DB::connection()->getDatabaseName() && Schema::hasTable('permissions')) {
                 foreach ($this->getPermissions() as $permission) {
                     /** @phpstan-ignore-next-line */
-                    Gate::define(Str::replaceFirst('-', '.', $permission->slug), function (User $user) use ($permission) {
+                    Gate::define($permission->name, function (User $user) use ($permission) {
                         /** @phpstan-ignore-next-line */
                         return $user->hasPermission($permission);
                     });
@@ -42,9 +41,9 @@ class GuardServiceProvider extends PackageServiceProvider
 
                 foreach ($this->getRoles() as $role) {
                     /** @phpstan-ignore-next-line */
-                    Gate::define($role->slug, function (User $user) use ($role) {
+                    Gate::define($role->name, function (User $user) use ($role) {
                         /** @phpstan-ignore-next-line */
-                        return $user->hasRole($role->slug);
+                        return $user->hasRole($role->name);
                     });
                 }
             }

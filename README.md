@@ -22,6 +22,20 @@ php artisan vendor:publish --tag="guard-laravel-migrations"
 php artisan migrate
 ```
 
+Add `HasRoles` trait on User Model
+
+```php
+namespace App\Models;
+
+use AmdadulHaq\Guard\HasRoles;
+# ...
+
+class User extends Authenticatable
+{
+    use HasRoles;
+}
+```
+
 ## Usage
 
 ### Role Create
@@ -39,27 +53,19 @@ use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
 
 $items = [
-    ['name' => 'show', 'for' => 'role'],
-    ['name' => 'create', 'for' => 'role'],
-    ['name' => 'edit', 'for' => 'role'],
-    ['name' => 'destroy', 'for' => 'role'],
-    ['name' => 'restore', 'for' => 'role'],
-
-    ['name' => 'show', 'for' => 'permission'],
-    ['name' => 'create', 'for' => 'permission'],
-    ['name' => 'edit', 'for' => 'permission'],
-    ['name' => 'destroy', 'for' => 'permission'],
-    ['name' => 'restore', 'for' => 'permission'],
+    ['name' => 'show_role'],
+    ['name' => 'create_role'],
+    ['name' => 'edit_role'],
+    ['name' => 'destroy_role'],
+    ['name' => 'restore_role'],
 ];
 
-$ids = [];
-foreach ($items as $key => $item) {
-    $permission = Permission::create($item);
-    $ids[] = $permission->id;
-}
-
 $role = Role::first();
-$role->permissions()->attach($ids);
+
+foreach ($items as $item) {
+    $permission = Permission::create($item);
+    $role->givePermissionTo($permission);
+}
 ```
 
 ### Assign Role and Permission
@@ -82,6 +88,26 @@ $permission = Permission::first();
 $role->givePermissionTo($permission);
 ```
 
+### Revoke Role and Permission
+
+```php
+use AmdadulHaq\Guard\Models\Permission;
+use AmdadulHaq\Guard\Models\Role;
+use App\Models\User;
+
+$user = User::first();
+
+$role = Role::first();
+
+// Revoke role
+$user->revokeRole($role);
+
+$permission = Permission::first();
+
+// Revoke permission
+$role->revokePermissionTo($permission);
+```
+
 ### Check Role and Permission
 
 ```php
@@ -94,7 +120,7 @@ $user = User::first();
 $role = Role::first();
 
 // Role check
-$user->hasRole($role->slug)
+$user->hasRole($role->name)
 // result: true or false
 
 $permission = Permission::first();
@@ -107,6 +133,8 @@ $user->hasPermission($permission);
 ### You can use multiple ways, some of are given bellow:
 
 ```php
+use Illuminate\Support\Facades\Gate;
+
 // for permission
 Gate::authorize('show.role');
 
@@ -123,11 +151,17 @@ $this->authorize('administrator');
 ```
 
 ```php
+use Illuminate\Support\Facades\Route;
+
 // for permission
-middleware('can:show.role');
+Route::get('/', function () {
+    // ...
+})->middleware('can:show.role');
 
 // for role
-middleware('can:administrator');
+Route::get('/', function () {
+    // ...
+})->middleware('can:administrator');
 ```
 
 ```blade

@@ -17,7 +17,6 @@
     ],
     "require": {
         "php": "^8.1",
-        "amdad121/unique-slug-laravel": "^1.0",
         "illuminate/contracts": "^10.0",
         "spatie/laravel-package-tools": "^1.14.0"
     },
