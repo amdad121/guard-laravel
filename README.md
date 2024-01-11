@@ -43,7 +43,7 @@ class User extends Authenticatable
 ```php
 use AmdadulHaq\Guard\Models\Role;
 
-Role::create(['name' => 'Administrator']);
+Role::create(['name' => 'administrator']);
 ```
 
 ### Permission Create
@@ -136,7 +136,7 @@ $user->hasPermission($permission);
 use Illuminate\Support\Facades\Gate;
 
 // for permission
-Gate::authorize('show.role');
+Gate::authorize('show_role');
 
 // for role
 Gate::authorize('administrator');
@@ -144,7 +144,7 @@ Gate::authorize('administrator');
 
 ```php
 // for permission
-$this->authorize('show.role');
+$this->authorize('show_role');
 
 // for role
 $this->authorize('administrator');
@@ -156,7 +156,7 @@ use Illuminate\Support\Facades\Route;
 // for permission
 Route::get('/', function () {
     // ...
-})->middleware('can:show.role');
+})->middleware('can:show_role');
 
 // for role
 Route::get('/', function () {
@@ -166,7 +166,7 @@ Route::get('/', function () {
 
 ```blade
 // for permission
-@can('show.role')
+@can('show_role')
     It's works
 @endcan
 
