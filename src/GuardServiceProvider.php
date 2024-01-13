@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard;
 
+use AmdadulHaq\Guard\Commands\CreatePermission;
+use AmdadulHaq\Guard\Commands\CreateRole;
 use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
 use App\Models\User;
@@ -24,7 +26,8 @@ class GuardServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('guard-laravel')
-            ->hasMigrations(['create_roles_table', 'create_permissions_table']);
+            ->hasMigrations(['create_roles_table', 'create_permissions_table'])
+            ->hasCommands([CreateRole::class, CreatePermission::class]);
     }
 
     public function bootingPackage(): ?string
