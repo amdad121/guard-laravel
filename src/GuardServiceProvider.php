@@ -7,6 +7,8 @@ namespace AmdadulHaq\Guard;
 use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
 use App\Models\User;
+use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -25,7 +27,7 @@ class GuardServiceProvider extends PackageServiceProvider
             ->hasMigrations(['create_roles_table', 'create_permissions_table']);
     }
 
-    public function bootingPackage(): void
+    public function bootingPackage(): ?string
     {
         try {
             DB::connection()->getPdo();
@@ -47,17 +49,19 @@ class GuardServiceProvider extends PackageServiceProvider
                     });
                 }
             }
-        } catch (\Exception $e) {
-            // throw $e->getMessage();
+        } catch (Exception $e) {
+            // return $e->getMessage();
         }
+
+        return null;
     }
 
-    protected function getPermissions()
+    protected function getPermissions(): Collection
     {
         return Permission::with('roles')->get();
     }
 
-    protected function getRoles()
+    protected function getRoles(): Collection
     {
         return Role::get();
     }
