@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
+use AmdadulHaq\Guard\Facades\Guard;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,17 +15,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('roles', function (Blueprint $table) {
+        $tables = config('guard.tables');
+        $models = config('guard.models');
+        $pivotTableName = Guard::getPivotTableName(Arr::only($models, ['role', 'user']));
+
+        Schema::create($tables['roles'], function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
             $table->string('label')->nullable();
             $table->timestamps();
         });
 
-        Schema::create('role_user', function (Blueprint $table) {
-            $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->primary(['role_id', 'user_id']);
+        Schema::create($pivotTableName, function (Blueprint $table) use ($tables, $models) {
+            $table->foreignId(Guard::getSingularName($tables['roles']).'_id')->constrained($tables['roles'])->cascadeOnDelete();
+            $table->foreignId(Guard::getSingularName(Guard::getTableName($models['user'])).'_id')->constrained(Guard::getTableName($models['user']))->cascadeOnDelete();
+            $table->primary(Guard::getSortPivotTable([Guard::getSingularName($tables['roles']).'_id', Guard::getSingularName(Guard::getTableName($models['user'])).'_id']));
         });
     }
 
@@ -30,7 +38,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('roles');
-        Schema::dropIfExists('role_user');
+        $tables = config('guard.tables');
+        $models = config('guard.models');
+        $pivotTableName = Guard::getPivotTableName(Arr::only($models, ['role', 'user']));
+
+        Schema::dropIfExists($tables['roles']);
+        Schema::dropIfExists($pivotTableName);
     }
 };

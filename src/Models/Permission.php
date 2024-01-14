@@ -17,8 +17,15 @@ class Permission extends Model implements PermissionContract
         'name', 'label',
     ];
 
+    protected $table = 'permissions';
+
+    public function __construct()
+    {
+        $this->table = config('guard.tables.permissions');
+    }
+
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(config('guard.models.role'));
     }
 }

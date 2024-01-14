@@ -59,7 +59,10 @@
         "laravel": {
             "providers": [
                 "AmdadulHaq\\Guard\\GuardServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Guard": "AmdadulHaq\\Guard\\Facades\\Guard"
+            }
         }
     },
     "minimum-stability": "dev",

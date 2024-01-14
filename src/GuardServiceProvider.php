@@ -6,9 +6,9 @@ namespace AmdadulHaq\Guard;
 
 use AmdadulHaq\Guard\Commands\CreatePermission;
 use AmdadulHaq\Guard\Commands\CreateRole;
+use AmdadulHaq\Guard\Contracts\User as UserContract;
 use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
-use App\Models\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +26,7 @@ class GuardServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('guard-laravel')
+            ->hasConfigFile('guard')
             ->hasMigrations(['create_roles_table', 'create_permissions_table'])
             ->hasCommands([CreateRole::class, CreatePermission::class]);
     }
@@ -38,7 +39,7 @@ class GuardServiceProvider extends PackageServiceProvider
             if (DB::connection()->getDatabaseName() && Schema::hasTable('permissions')) {
                 foreach ($this->getPermissions() as $permission) {
                     /** @phpstan-ignore-next-line */
-                    Gate::define($permission->name, function (User $user) use ($permission) {
+                    Gate::define($permission->name, function (UserContract $user) use ($permission) {
                         /** @phpstan-ignore-next-line */
                         return $user->hasPermission($permission);
                     });
@@ -46,7 +47,7 @@ class GuardServiceProvider extends PackageServiceProvider
 
                 foreach ($this->getRoles() as $role) {
                     /** @phpstan-ignore-next-line */
-                    Gate::define($role->name, function (User $user) use ($role) {
+                    Gate::define($role->name, function (UserContract $user) use ($role) {
                         /** @phpstan-ignore-next-line */
                         return $user->hasRole($role->name);
                     });

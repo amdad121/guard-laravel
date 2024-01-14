@@ -18,8 +18,15 @@ class Role extends Model implements RoleContract
         'name', 'label',
     ];
 
+    protected $table = 'roles';
+
+    public function __construct()
+    {
+        $this->table = config('guard.tables.roles');
+    }
+
     public function permissions(): BelongsToMany
     {
-        return $this->belongsToMany(Permission::class);
+        return $this->belongsToMany(config('guard.models.permission'));
     }
 }
