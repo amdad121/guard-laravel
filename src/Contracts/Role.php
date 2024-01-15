@@ -12,6 +12,8 @@ interface Role
 {
     public function permissions(): BelongsToMany;
 
+    public function users(): BelongsToMany;
+
     public function givePermissionTo(PermissionContract $permission): Model;
 
     public function syncPermissions(array $permissions): array;
