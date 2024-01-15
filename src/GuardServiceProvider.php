@@ -40,7 +40,6 @@ class GuardServiceProvider extends PackageServiceProvider
                 foreach ($this->getPermissions() as $permission) {
                     /** @phpstan-ignore-next-line */
                     Gate::define($permission->name, function (UserContract $user) use ($permission) {
-                        /** @phpstan-ignore-next-line */
                         return $user->hasPermission($permission);
                     });
                 }
