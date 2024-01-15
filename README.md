@@ -22,15 +22,16 @@ php artisan vendor:publish --tag="guard-laravel-migrations"
 php artisan migrate
 ```
 
-Add `HasRoles` trait on User Model
+Add `HasRoles` Trait and `UserContract` Interface on User Model
 
 ```php
 namespace App\Models;
 
+use AmdadulHaq\Guard\Contracts\User as UserContract;
 use AmdadulHaq\Guard\HasRoles;
 # ...
 
-class User extends Authenticatable
+class User extends Authenticatable implements UserContract
 {
     use HasRoles;
 }
@@ -53,18 +54,18 @@ use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
 
 $items = [
-    ['name' => 'show_role'],
-    ['name' => 'create_role'],
-    ['name' => 'edit_role'],
-    ['name' => 'destroy_role'],
-    ['name' => 'restore_role'],
+    'role' => ['viewAny', 'view', 'create', 'update', 'delete', 'restore', 'forceDelete'],
+    'permission' => ['viewAny', 'view', 'create', 'update', 'delete'],
 ];
 
 $role = Role::first();
 
-foreach ($items as $item) {
-    $permission = Permission::create($item);
-    $role->givePermissionTo($permission);
+foreach ($items as $group => $names) {
+    foreach ($names as $name) {
+        $permission = Permission::create(['name' => $group.'.'.$name]);
+
+        $role->givePermissionTo($permission);
+    }
 }
 ```
 
@@ -120,14 +121,12 @@ $user = User::first();
 $role = Role::first();
 
 // Role check
-$user->hasRole($role->name)
-// result: true or false
+$user->hasRole($role->name) // true or false
 
 $permission = Permission::first();
 
 // Permission check
-$user->hasPermission($permission);
-// result: true or false
+$user->hasPermission($permission); // true or false
 ```
 
 ### You can use multiple ways, some of are given bellow:
