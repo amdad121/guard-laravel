@@ -54,7 +54,7 @@ class GuardServiceProvider extends PackageServiceProvider
                 }
             }
         } catch (Exception $e) {
-            // return $e->getMessage();
+            info('guard-laravel: Database not found or not yet migrated. Ignoring user permissions while booting app.');
         }
 
         return null;
