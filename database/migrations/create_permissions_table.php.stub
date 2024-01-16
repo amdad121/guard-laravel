@@ -17,7 +17,7 @@ return new class extends Migration
     {
         $tables = config('guard.tables');
         $models = config('guard.models');
-        $pivotTableName = Guard::getPivotTableName(Arr::only($models, ['permission','role']));
+        $pivotTableName = Guard::getPivotTableName(Arr::only($models, ['permission', 'role']));
 
         Schema::create($tables['permissions'], function (Blueprint $table) {
             $table->id();
