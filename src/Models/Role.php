@@ -6,23 +6,20 @@ namespace AmdadulHaq\Guard\Models;
 
 use AmdadulHaq\Guard\Contracts\Role as RoleContract;
 use AmdadulHaq\Guard\HasPermissions;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Role extends Model implements RoleContract
 {
-    use HasFactory, HasPermissions;
+    use HasPermissions;
 
-    protected $fillable = [
-        'name', 'label',
-    ];
+    protected $guarded = [];
 
-    protected $table = 'roles';
-
-    public function __construct()
+    public function __construct(array $attributes = [])
     {
-        $this->table = config('guard.tables.roles');
+        parent::__construct($attributes);
+
+        $this->table = config('guard.tables.roles') ?: parent::getTable();
     }
 
     public function permissions(): BelongsToMany

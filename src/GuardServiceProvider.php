@@ -6,6 +6,8 @@ namespace AmdadulHaq\Guard;
 
 use AmdadulHaq\Guard\Commands\CreatePermission;
 use AmdadulHaq\Guard\Commands\CreateRole;
+use AmdadulHaq\Guard\Contracts\Permission as PermissionContract;
+use AmdadulHaq\Guard\Contracts\Role as RoleContract;
 use AmdadulHaq\Guard\Contracts\User as UserContract;
 use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
@@ -31,8 +33,10 @@ class GuardServiceProvider extends PackageServiceProvider
             ->hasCommands([CreateRole::class, CreatePermission::class]);
     }
 
-    public function bootingPackage(): ?string
+    public function bootingPackage()
     {
+        parent::bootingPackage();
+
         try {
             DB::connection()->getPdo();
 
@@ -57,6 +61,14 @@ class GuardServiceProvider extends PackageServiceProvider
         }
 
         return null;
+    }
+
+    public function registeringPackage(): void
+    {
+        parent::registeringPackage();
+
+        $this->app->bind(PermissionContract::class, fn ($app) => $app->make($app->config['guard.models.permission']));
+        $this->app->bind(RoleContract::class, fn ($app) => $app->make($app->config['guard.models.role']));
     }
 
     protected function getPermissions(): Collection

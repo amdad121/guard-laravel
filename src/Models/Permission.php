@@ -5,23 +5,18 @@ declare(strict_types=1);
 namespace AmdadulHaq\Guard\Models;
 
 use AmdadulHaq\Guard\Contracts\Permission as PermissionContract;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Permission extends Model implements PermissionContract
 {
-    use HasFactory;
+    protected $guarded = [];
 
-    protected $fillable = [
-        'name', 'label',
-    ];
-
-    protected $table = 'permissions';
-
-    public function __construct()
+    public function __construct(array $attributes = [])
     {
-        $this->table = config('guard.tables.permissions');
+        parent::__construct($attributes);
+
+        $this->table = config('guard.tables.permissions') ?: parent::getTable();
     }
 
     public function roles(): BelongsToMany

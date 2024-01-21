@@ -42,6 +42,6 @@ trait HasRoles
 
     public function hasPermission(Model $permission): bool
     {
-        return $this->hasRole($permission->roles);
+        return $this->hasRole(role: $permission->roles);
     }
 }
