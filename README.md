@@ -135,7 +135,7 @@ $user->hasPermission($permission); // true or false
 use Illuminate\Support\Facades\Gate;
 
 // for permission
-Gate::authorize('role.show');
+Gate::authorize('role.view');
 
 // for role
 Gate::authorize('administrator');
@@ -143,7 +143,7 @@ Gate::authorize('administrator');
 
 ```php
 // for permission
-$this->authorize('role.show');
+$this->authorize('role.view');
 
 // for role
 $this->authorize('administrator');
@@ -155,7 +155,7 @@ use Illuminate\Support\Facades\Route;
 // for permission
 Route::get('/', function () {
     // ...
-})->middleware('can:role.show');
+})->middleware('can:role.view');
 
 // for role
 Route::get('/', function () {
@@ -165,7 +165,7 @@ Route::get('/', function () {
 
 ```blade
 // for permission
-@can('role.show')
+@can('role.view')
     It's works
 @endcan
 
