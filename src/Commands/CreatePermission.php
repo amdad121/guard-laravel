@@ -58,13 +58,8 @@ class CreatePermission extends Command implements PromptsForMissingInput
                 required: false
             );
         }
-        /** @phpstan-ignore-next-line */
-        $permission = Permission::firstOrCreate([
-            'name' => $name,
-        ], [
-            'name' => $name,
-            'label' => $label,
-        ]);
+
+        $permission = Permission::firstOrCreate(['name' => $name], ['name' => $name, 'label' => $label]);
 
         $message = '';
 

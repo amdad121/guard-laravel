@@ -60,6 +60,7 @@ class GuardServiceProvider extends PackageServiceProvider
     protected function defineGatePermissions(): void
     {
         foreach ($this->getPermissions() as $permission) {
+            /** @phpstan-ignore-next-line */
             Gate::define($permission->name, fn (UserContract $user) => $user->hasPermission($permission));
         }
     }
@@ -67,6 +68,7 @@ class GuardServiceProvider extends PackageServiceProvider
     protected function defineGateRoles(): void
     {
         foreach ($this->getRoles() as $role) {
+            /** @phpstan-ignore-next-line */
             Gate::define($role->name, fn (UserContract $user) => $user->hasRole($role->name));
         }
     }
