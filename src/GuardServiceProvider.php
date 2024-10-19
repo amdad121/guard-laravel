@@ -11,9 +11,8 @@ use AmdadulHaq\Guard\Contracts\Role as RoleContract;
 use AmdadulHaq\Guard\Contracts\User as UserContract;
 use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
-use Exception;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Spatie\LaravelPackageTools\Package;
@@ -33,34 +32,16 @@ class GuardServiceProvider extends PackageServiceProvider
             ->hasCommands([CreateRole::class, CreatePermission::class]);
     }
 
-    public function bootingPackage()
+    public function bootingPackage(): void
     {
         parent::bootingPackage();
 
-        try {
-            DB::connection()->getPdo();
-
-            if (DB::connection()->getDatabaseName() && Schema::hasTable('permissions')) {
-                foreach ($this->getPermissions() as $permission) {
-                    /** @phpstan-ignore-next-line */
-                    Gate::define($permission->name, function (UserContract $user) use ($permission) {
-                        return $user->hasPermission($permission);
-                    });
-                }
-
-                foreach ($this->getRoles() as $role) {
-                    /** @phpstan-ignore-next-line */
-                    Gate::define($role->name, function (UserContract $user) use ($role) {
-                        /** @phpstan-ignore-next-line */
-                        return $user->hasRole($role->name);
-                    });
-                }
-            }
-        } catch (Exception $e) {
+        if ($this->permissionsTableExists()) {
+            $this->defineGatePermissions();
+            $this->defineGateRoles();
+        } else {
             info('guard-laravel: Database not found or not yet migrated. Ignoring user permissions while booting app.');
         }
-
-        return null;
     }
 
     public function registeringPackage(): void
@@ -71,13 +52,46 @@ class GuardServiceProvider extends PackageServiceProvider
         $this->app->bind(RoleContract::class, fn ($app) => $app->make($app->config['guard.models.role']));
     }
 
+    protected function permissionsTableExists(): bool
+    {
+        return Schema::hasTable('permissions');
+    }
+
+    protected function defineGatePermissions(): void
+    {
+        foreach ($this->getPermissions() as $permission) {
+            Gate::define($permission->name, fn (UserContract $user) => $user->hasPermission($permission));
+        }
+    }
+
+    protected function defineGateRoles(): void
+    {
+        foreach ($this->getRoles() as $role) {
+            Gate::define($role->name, fn (UserContract $user) => $user->hasRole($role->name));
+        }
+    }
+
     protected function getPermissions(): Collection
     {
-        return Permission::with('roles')->get();
+        $cacheDuration = config('guard.cache.permissions_duration', 3600); // Default to 3600 seconds if not set
+
+        return Cache::remember('permissions', $cacheDuration, function () {
+            return Permission::with('roles')->get();
+        });
     }
 
     protected function getRoles(): Collection
     {
-        return Role::get();
+        $cacheDuration = config('guard.cache.roles_duration', 3600); // Default to 3600 seconds if not set
+
+        return Cache::remember('roles', $cacheDuration, function () {
+            return Role::all();
+        });
+    }
+
+    public static function clearCache(): void
+    {
+        Cache::forget('permissions');
+        Cache::forget('roles');
     }
 }

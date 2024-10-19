@@ -15,4 +15,9 @@ return [
 
         'permissions' => 'permissions',
     ],
+
+    'cache' => [
+        'permissions_duration' => env('GUARD_PERMISSIONS_CACHE_DURATION', 3600), // Default to 3600 seconds (1 hour)
+        'roles_duration' => env('GUARD_ROLES_CACHE_DURATION', 3600), // Default to 3600 seconds (1 hour)
+    ],
 ];
