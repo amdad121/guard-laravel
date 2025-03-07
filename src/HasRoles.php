@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 
+/** @phpstan-ignore-next-line */
 trait HasRoles
 {
     public function roles(): BelongsToMany
