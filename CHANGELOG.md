@@ -2,6 +2,10 @@
 
 All notable changes to `guard-laravel` will be documented in this file.
 
+## v0.5.0 - 2025-03-07
+
+**Full Changelog**: https://github.com/amdad121/guard-laravel/compare/v0.4.0...v0.5.0
+
 ## v0.4.0 - 2025-03-07
 
 **Full Changelog**: https://github.com/amdad121/guard-laravel/compare/v0.3.0...v0.4.0
