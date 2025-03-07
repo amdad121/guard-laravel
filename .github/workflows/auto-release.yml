@@ -1,9 +1,9 @@
-name: AutoRelease
+name: Auto Release on Tag
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 jobs:
   release:
