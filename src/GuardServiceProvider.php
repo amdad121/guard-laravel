@@ -54,7 +54,11 @@ class GuardServiceProvider extends PackageServiceProvider
 
     protected function permissionsTableExists(): bool
     {
-        return Schema::hasTable('permissions');
+        try {
+            return Schema::hasTable('permissions');
+        } catch (\Throwable $th) {
+            return false;
+        }
     }
 
     protected function defineGatePermissions(): void
