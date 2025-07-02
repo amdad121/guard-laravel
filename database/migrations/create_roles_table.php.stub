@@ -42,7 +42,7 @@ return new class extends Migration
         $models = config('guard.models');
         $pivotTableName = Guard::getPivotTableName(Arr::only($models, ['role', 'user']));
 
-        Schema::dropIfExists($tables['roles']);
         Schema::dropIfExists($pivotTableName);
+        Schema::dropIfExists($tables['roles']);
     }
 };
