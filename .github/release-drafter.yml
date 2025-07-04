@@ -1,0 +1,26 @@
+name-template: "Release v{{version}}"
+tag-template: "v{{version}}"
+
+categories:
+  - title: "🚀 Features"
+    labels:
+      - "feature"
+  - title: "🐛 Bug Fixes"
+    labels:
+      - "bug"
+  - title: "🧰 Maintenance"
+    labels:
+      - "chore"
+  - title: "👥 Contributors"
+    labels:
+      - "contributor"
+
+change-template: "- ${{conventionalCommit.message}} (by @${{conventionalCommit.author}})"
+no-changes-template: "* No changes available"
+
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  **Thanks to all contributors! ❤️**
