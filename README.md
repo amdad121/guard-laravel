@@ -11,7 +11,7 @@ Guard is a modern Role and Permission management system for Laravel 10, 11, and 
 
 If you find Guard Laravel helpful, please consider **sponsoring** the project. Your support helps maintain and improve the package.
 
-**[Become a GitHub Sponsor](../../sponsor)** - Any amount is greatly appreciated!
+**[Become a GitHub Sponsor](https://github.com/sponsors/amdad121)** - Any amount is greatly appreciated!
 
 ## Table of Contents
 
