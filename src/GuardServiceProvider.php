@@ -99,23 +99,19 @@ class GuardServiceProvider extends ServiceProvider
         }
     }
 
-    protected function defineGatePermissions(): void
+    public function defineGatePermissions(): void
     {
         foreach ($this->getPermissions() as $permission) {
             $permissionName = $permission->getName();
-            if (! Gate::has($permissionName)) {
-                Gate::define($permissionName, fn (UserContract $user): bool => $user->hasPermissionByName($permissionName));
-            }
+            Gate::define($permissionName, fn (UserContract $user): bool => $user->hasPermissionByName($permissionName));
         }
     }
 
-    protected function defineGateRoles(): void
+    public function defineGateRoles(): void
     {
         foreach ($this->getRoles() as $role) {
             $roleName = $role->getName();
-            if (! Gate::has($roleName)) {
-                Gate::define($roleName, fn (UserContract $user): bool => $user->hasRole($roleName));
-            }
+            Gate::define($roleName, fn (UserContract $user): bool => $user->hasRole($roleName));
         }
     }
 
@@ -163,7 +159,11 @@ class GuardServiceProvider extends ServiceProvider
 
     public static function staticClearCache(): void
     {
-        $instance = resolve(self::class);
-        $instance->clearCache();
+        Cache::forget(CacheKey::PERMISSIONS->value);
+        Cache::forget(CacheKey::ROLES->value);
+
+        if (config('guard.cache.tags', false)) {
+            Cache::tags([CacheKey::PERMISSIONS->value, CacheKey::ROLES->value])->flush();
+        }
     }
 }

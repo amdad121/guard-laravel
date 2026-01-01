@@ -49,6 +49,11 @@ class Role extends Model implements RoleContract
         return $this->belongsToMany(config('guard.models.permission'));
     }
 
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(config('guard.models.user'), 'role_user');
+    }
+
     protected function scopeGuarded(Builder $query): Builder
     {
         return $query->where('is_guarded', true);

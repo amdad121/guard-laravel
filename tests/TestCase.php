@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AmdadulHaq\Guard\Tests;
 
 use AmdadulHaq\Guard\GuardServiceProvider;
+use AmdadulHaq\Guard\Tests\Models\User;
 use Illuminate\Database\ConnectionResolverInterface;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -25,6 +26,17 @@ class TestCase extends Orchestra
     protected function getEnvironmentSetUp($app)
     {
         config()->set('database.default', 'testing');
+        config()->set('guard.models.user', User::class);
+
+        $app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->create('users', function ($table): void {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->timestamp('email_verified_at')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
+        });
 
         $app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->create('roles', function ($table): void {
             $table->id();
@@ -64,6 +76,7 @@ class TestCase extends Orchestra
         $this->app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->dropIfExists('permission_role');
         $this->app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->dropIfExists('permissions');
         $this->app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->dropIfExists('roles');
+        $this->app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->dropIfExists('users');
 
         parent::tearDown();
     }

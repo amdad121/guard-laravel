@@ -5,6 +5,7 @@ declare(strict_types=1);
 use AmdadulHaq\Guard\Enums\PermissionType;
 use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
+use AmdadulHaq\Guard\Tests\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -111,3 +112,47 @@ it('throws exception when role does not exist', function (): void {
 it('throws exception when permission does not exist', function (): void {
     Permission::where('name', 'non-existent')->firstOrFail();
 })->throws(ModelNotFoundException::class);
+
+it('can get all users with a role', function (): void {
+    $user1 = User::create([
+        'name' => 'User 1',
+        'email' => 'user1@example.com',
+        'password' => 'password',
+    ]);
+
+    $user2 = User::create([
+        'name' => 'User 2',
+        'email' => 'user2@example.com',
+        'password' => 'password',
+    ]);
+
+    $user3 = User::create([
+        'name' => 'User 3',
+        'email' => 'user3@example.com',
+        'password' => 'password',
+    ]);
+
+    $this->role->users()->attach([$user1->id, $user2->id]);
+
+    $usersWithRole = $this->role->users;
+
+    expect($usersWithRole)
+        ->toHaveCount(2)
+        ->pluck('name')->sort()->values()
+        ->toArray()
+        ->toEqual(['User 1', 'User 2']);
+});
+
+it('can check if user belongs to role via users relation', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+    ]);
+
+    $this->role->users()->attach($user->id);
+
+    $hasUser = $this->role->users()->where('id', $user->id)->exists();
+
+    expect($hasUser)->toBeTrue();
+});
