@@ -31,7 +31,30 @@ trait HasRoles
 
     public function syncRoles(array $roles): array
     {
-        return $this->roles()->sync($roles);
+        $roleIds = $this->getRoleIds($roles);
+
+        return $this->roles()->sync($roleIds);
+    }
+
+    /**
+     * Get role IDs from array of IDs or names.
+     *
+     * @param  array<int, int|string>  $roles
+     * @return array<int, int>
+     */
+    protected function getRoleIds(array $roles): array
+    {
+        return collect($roles)
+            ->map(function ($role) {
+                if (is_numeric($role)) {
+                    return (int) $role;
+                }
+
+                return config('guard.models.role')::where('name', $role)->first()?->id;
+            })
+            ->filter()
+            ->values()
+            ->toArray();
     }
 
     public function revokeRole(RoleContract|Model|string $role): int

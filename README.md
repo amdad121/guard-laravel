@@ -80,7 +80,7 @@ composer require amdadulhaq/guard-laravel
 You can publish and run the migrations with:
 
 ```bash
-php artisan vendor:publish --tag="guard-laravel-migrations"
+php artisan vendor:publish --tag="guard-migrations"
 php artisan migrate
 ```
 
@@ -123,7 +123,6 @@ return [
         'permissions_duration' => env('GUARD_PERMISSIONS_CACHE_DURATION', 3600),
         'roles_duration' => env('GUARD_ROLES_CACHE_DURATION', 3600),
         'enabled' => env('GUARD_CACHE_ENABLED', true),
-        'tags' => env('GUARD_CACHE_TAGS', true),
     ],
     'middleware' => [
         'role' => 'role',
@@ -185,12 +184,15 @@ $user->hasPermission('posts.delete'); // true
 ```php
 // Assign a single permission
 $role->givePermissionTo($permission);
+$role->givePermissionTo('users.create');
 
-// Sync multiple permissions
+// Sync multiple permissions (supports both IDs and names)
 $role->syncPermissions([$permission1->id, $permission2->id]);
+$role->syncPermissions(['users.create', 'users.edit', 'users.delete']);
 
 // Revoke a permission
 $role->revokePermissionTo($permission);
+$role->revokePermissionTo('users.delete');
 ```
 
 ### Assigning Roles to Users
@@ -489,7 +491,7 @@ class RoleAndPermissionSeeder extends Seeder
         }
 
         // Assign permissions to roles
-        $admin->syncPermissions(Permission::all());
+        $admin->syncPermissions(Permission::all()->pluck('id')->toArray());
         $editor->syncPermissions(['posts.view_any', 'posts.create', 'posts.edit', 'posts.*']);
         $user->syncPermissions(['posts.view_any']);
     }

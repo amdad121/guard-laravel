@@ -151,19 +151,11 @@ class GuardServiceProvider extends ServiceProvider
     {
         Cache::forget(CacheKey::PERMISSIONS->value);
         Cache::forget(CacheKey::ROLES->value);
-
-        if (config('guard.cache.tags', false)) {
-            Cache::tags([CacheKey::PERMISSIONS->value, CacheKey::ROLES->value])->flush();
-        }
     }
 
     public static function staticClearCache(): void
     {
         Cache::forget(CacheKey::PERMISSIONS->value);
         Cache::forget(CacheKey::ROLES->value);
-
-        if (config('guard.cache.tags', false)) {
-            Cache::tags([CacheKey::PERMISSIONS->value, CacheKey::ROLES->value])->flush();
-        }
     }
 }

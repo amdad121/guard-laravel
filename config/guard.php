@@ -18,7 +18,6 @@ return [
         'permissions_duration' => env('GUARD_PERMISSIONS_CACHE_DURATION', 3600),
         'roles_duration' => env('GUARD_ROLES_CACHE_DURATION', 3600),
         'enabled' => env('GUARD_CACHE_ENABLED', true),
-        'tags' => env('GUARD_CACHE_TAGS', true),
     ],
 
     'middleware' => [
