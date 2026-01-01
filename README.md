@@ -61,7 +61,7 @@ If you find Guard Laravel helpful, please consider **sponsoring** the project. Y
 - **Query Scopes** - Filter users by roles and permissions
 - **Custom Exceptions** - Better error messages
 - **Enums** - Type-safe constants for CacheKey and PermissionType
-- **Developer Tools** - Includes Pint, Pest, Rector, and Arastan
+- **Developer Tools** - Includes Pint, Pest, Rector, and Larastan
 
 ## Requirements
 
@@ -683,14 +683,24 @@ enum PermissionType: string
 
 This package includes comprehensive developer tools:
 
+### Code Refactoring
+
+```bash
+# Run Rector
+composer refactor
+
+# Check Rector dry-run
+composer refactor:check
+```
+
 ### Code Quality
 
 ```bash
 # Format code with Laravel Pint
-composer format
+composer lint
 
 # Check code style
-composer format:check
+composer lint:check
 ```
 
 ### Testing
@@ -706,18 +716,8 @@ composer test-coverage
 ### Static Analysis
 
 ```bash
-# Run Arastan (Laravel-specific PHPStan)
+# Run Larastan
 composer analyse
-```
-
-### Code Refactoring
-
-```bash
-# Run Rector (Laravel ruleset)
-composer rector
-
-# Check Rector dry-run
-composer rector:check
 ```
 
 ## Testing
