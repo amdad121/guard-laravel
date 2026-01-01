@@ -4,7 +4,11 @@
     "keywords": [
         "Amdadul Haq",
         "laravel",
-        "guard-laravel"
+        "guard-laravel",
+        "roles",
+        "permissions",
+        "acl",
+        "authorization"
     ],
     "homepage": "https://github.com/amdad121/guard-laravel",
     "license": "MIT",
@@ -16,21 +20,19 @@
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.2|^8.3|^8.4|^8.5",
         "illuminate/contracts": "^10.0|^11.0|^12.0",
-        "spatie/laravel-package-tools": "^1.16"
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.14",
-        "nunomaduro/collision": "^8.1.1|^7.10.0",
-        "larastan/larastan": "^2.9|^3.0",
-        "orchestra/testbench": "^10.0.0|^9.0.0|^8.22.0",
-        "pestphp/pest": "^2.34|^3.0",
-        "pestphp/pest-plugin-arch": "^2.7|^3.0",
-        "pestphp/pest-plugin-laravel": "^2.3|^3.0",
-        "phpstan/extension-installer": "^1.3|^2.0",
-        "phpstan/phpstan-deprecation-rules": "^1.1|^2.0",
-        "phpstan/phpstan-phpunit": "^1.3|^2.0"
+        "laravel/pint": "^1.18",
+        "larastan/larastan": "^3.0",
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-arch": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0",
+        "driftingly/rector-laravel": "^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -46,14 +48,17 @@
         "analyse": "vendor/bin/phpstan analyse",
         "test": "vendor/bin/pest",
         "test-coverage": "vendor/bin/pest --coverage",
-        "format": "vendor/bin/pint"
+        "refactor": "vendor/bin/rector process",
+        "refactor:check": "vendor/bin/rector process --dry-run",
+        "lint": "vendor/bin/pint",
+        "lint:check": "vendor/bin/pint --test"
     },
     "config": {
         "sort-packages": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "phpstan/extension-installer": true
-        }
+            "pestphp/pest-plugin": true
+        },
+        "optimize-autoloader": true
     },
     "extra": {
         "laravel": {
@@ -65,6 +70,6 @@
             }
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

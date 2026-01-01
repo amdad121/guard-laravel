@@ -15,26 +15,36 @@ class Guard
 
     public function getTableName(string $class): string
     {
-        return app($class)->getTable();
+        static $cache = [];
+
+        if (! isset($cache[$class])) {
+            $cache[$class] = resolve($class)->getTable();
+        }
+
+        return $cache[$class];
     }
 
+    /**
+     * @param  array<int, string>  $array
+     * @return array<int, string>
+     */
     public function getSortPivotTable(array $array): array
     {
-        $collection = collect($array);
-
-        $sorted = $collection->sort();
-
-        return $sorted->values()->all();
+        return collect($array)
+            ->sort()
+            ->values()
+            ->all();
     }
 
+    /**
+     * @param  array<int, string>  $array
+     */
     public function getPivotTableName(array $array): string
     {
-        $collection = collect($array)->map(function ($value) {
-            return self::getSingularName(self::getTableName($value));
-        });
-
-        $sorted = $collection->sort();
-
-        return $sorted->values()->implode('_');
+        return collect($array)
+            ->map(fn (string $value): string => self::getSingularName(self::getTableName($value)))
+            ->sort()
+            ->values()
+            ->implode('_');
     }
 }

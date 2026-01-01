@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Commands;
 
+use AmdadulHaq\Guard\Contracts\User as UserContract;
 use AmdadulHaq\Guard\Models\Role;
-use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Illuminate\Database\Eloquent\Model;
 
 use function Laravel\Prompts\text;
 
@@ -64,12 +65,21 @@ class CreateRole extends Command implements PromptsForMissingInput
         $message = '';
 
         if ($userId) {
-            /** @phpstan-ignore-next-line */
-            $user = User::find($userId);
+            /** @var Model|UserContract $userModel */
+            $userModel = resolve(config('guard.models.user'));
+            /** @var Model|null $user */
+            $user = $userModel->find($userId);
 
             if ($user) {
-                $user->assignRole($role);
-                $message = 'Assign to the user ID of #'.$user->id.'.';
+                if ($user instanceof UserContract) {
+                    $user->assignRole($role);
+                    $message = 'Assign to the user ID of #'.$user->getKey().'.';
+                } else {
+                    $this->error('User model must implement UserContract.');
+                    $this->newLine();
+
+                    return self::INVALID;
+                }
             } else {
                 $this->error('User is not exists. Try to using with correct user ID.');
                 $this->newLine();
