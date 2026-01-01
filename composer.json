@@ -22,17 +22,16 @@
     "require": {
         "php": "^8.2|^8.3|^8.4|^8.5",
         "illuminate/contracts": "^10.0|^11.0|^12.0",
-        "illuminate/support": "^10.0|^11.0|^12.0",
-        "illuminate/database": "^10.0|^11.0|^12.0"
+        "illuminate/database": "^10.0|^11.0|^12.0",
+        "illuminate/support": "^10.0|^11.0|^12.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.18",
-        "larastan/larastan": "^3.0",
+        "driftingly/rector-laravel": "^2.1",
+        "larastan/larastan": "^2.0|^3.0",
+        "laravel/pint": "^1.26",
         "orchestra/testbench": "^8.0|^9.0|^10.0",
-        "pestphp/pest": "^4.0",
-        "pestphp/pest-plugin-arch": "^4.0",
-        "pestphp/pest-plugin-laravel": "^4.0",
-        "driftingly/rector-laravel": "^2.0"
+        "pestphp/pest": "^2.0|^3.0|^4.0",
+        "pestphp/pest-plugin-laravel": "^2.0|^3.0|^4.0"
     },
     "autoload": {
         "psr-4": {
