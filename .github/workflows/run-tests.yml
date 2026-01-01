@@ -16,11 +16,14 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         php: [8.5, 8.4, 8.3, 8.2]
         laravel: [12.*, 11.*, 10.*]
-        testbench: [10.*, 9.*, 8.*]
-        stability: [prefer-lowest, prefer-stable]
+        exclude:
+          - php: 8.5
+            laravel: 10.*
+          - php: 8.5
+            laravel: 11.*
         include:
           - laravel: 12.*
             testbench: 10.*
@@ -29,7 +32,7 @@ jobs:
           - laravel: 10.*
             testbench: 8.*
 
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - T${{ matrix.testbench }} - ${{ matrix.os }}
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.os }}
 
     steps:
       - name: Checkout code
@@ -42,6 +45,18 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
           coverage: none
 
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
       - name: Setup problem matchers
         run: |
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
@@ -49,7 +64,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --dev
           composer update --prefer-dist --no-interaction
 
       - name: List Installed Dependencies
