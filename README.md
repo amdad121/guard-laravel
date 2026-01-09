@@ -18,6 +18,7 @@ If you find Guard Laravel helpful, please consider **sponsoring** the project. Y
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Upgrade Guide](#upgrade-guide)
 - [Configuration](#configuration)
 - [Usage](#usage)
   - [Creating Roles](#creating-roles)
@@ -84,7 +85,7 @@ php artisan vendor:publish --tag="guard-migrations"
 php artisan migrate
 ```
 
-Add `HasRoles` Trait and `UserContract` Interface on User Model:
+Add the `HasRoles` trait and `UserContract` interface to your User model:
 
 ```php
 namespace App\Models;
@@ -97,6 +98,12 @@ class User extends Authenticatable implements UserContract
     use HasRoles;
 }
 ```
+
+---
+
+## Upgrade Guide
+
+If you're upgrading from an older version, please follow the [Upgrade Guide](UPGRADE.md) for detailed instructions.
 
 ## Configuration
 
