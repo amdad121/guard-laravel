@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property string $name
+ * @property string|null $label
+ * @property string|null $description
+ * @property string|null $group
  * @property bool $is_wildcard
  */
 class Permission extends Model implements PermissionContract
@@ -31,37 +34,24 @@ class Permission extends Model implements PermissionContract
         ];
     }
 
-    protected static function booted(): void
+    public function getLabel(): ?string
     {
-        static::creating(function (self $permission): void {
-            $permission->is_wildcard = str_ends_with($permission->name, '*');
-        });
+        return $this->label;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
     }
 
     public function getTable(): string
     {
-        static $table;
-
-        if ($table === null) {
-            $table = config('guard.tables.permissions', parent::getTable());
-        }
-
-        return $table;
+        return config('guard.tables.permissions', parent::getTable());
     }
 
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(config('guard.models.role'));
-    }
-
-    protected function scopeWildcard(Builder $query): Builder
-    {
-        return $query->where('name', 'like', '%*');
-    }
-
-    protected function scopeByGroup(Builder $query, string $group): Builder
-    {
-        return $query->where('name', 'like', $group.'.%');
     }
 
     public function isWildcard(): bool
@@ -74,11 +64,31 @@ class Permission extends Model implements PermissionContract
         return explode('.', $this->name)[0];
     }
 
+    /**
+     * Get the permission action type (e.g., 'read', 'write', 'delete').
+     */
     public function getType(): ?PermissionType
     {
         $parts = explode('.', $this->name);
         $action = end($parts);
 
         return PermissionType::tryFrom($action);
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $permission): void {
+            $permission->is_wildcard = str_ends_with($permission->name, '*');
+        });
+    }
+
+    protected function scopeWildcard(Builder $query): Builder
+    {
+        return $query->where('name', 'like', '%*');
+    }
+
+    protected function scopeByGroup(Builder $query, string $group): Builder
+    {
+        return $query->where('name', 'like', $group.'.%');
     }
 }

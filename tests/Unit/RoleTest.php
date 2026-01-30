@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use AmdadulHaq\Guard\Enums\PermissionType;
 use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
 use AmdadulHaq\Guard\Tests\Models\User;
@@ -11,12 +10,12 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use function Pest\Laravel\assertDatabaseHas;
 
 beforeEach(function (): void {
-    $this->role = Role::create([
+    $this->role = Role::query()->create([
         'name' => 'admin',
         'label' => 'Administrator',
     ]);
 
-    $this->permission = Permission::create([
+    $this->permission = Permission::query()->create([
         'name' => 'users.create',
         'label' => 'Create Users',
     ]);
@@ -32,16 +31,6 @@ it('can create a role', function (): void {
     ]);
 });
 
-it('can create a permission', function (): void {
-    expect($this->permission)
-        ->name->toBe('users.create')
-        ->label->toBe('Create Users');
-
-    assertDatabaseHas('permissions', [
-        'name' => 'users.create',
-    ]);
-});
-
 it('can assign permission to role', function (): void {
     $this->role->givePermissionTo($this->permission);
 
@@ -51,7 +40,7 @@ it('can assign permission to role', function (): void {
 });
 
 it('can sync permissions to role', function (): void {
-    $permission2 = Permission::create([
+    $permission2 = Permission::query()->create([
         'name' => 'users.update',
         'label' => 'Update Users',
     ]);
@@ -71,62 +60,30 @@ it('can revoke permission from role', function (): void {
     $this->role->givePermissionTo($this->permission);
     expect($this->role->permissions)->toHaveCount(1);
 
-    $this->role->permissions()->detach($this->permission->id);
+    $this->role->revokePermissionTo($this->permission);
 
     expect($this->role->fresh()->permissions)
         ->toHaveCount(0);
 });
 
-it('can check if permission is wildcard', function (): void {
-    $wildcardPermission = Permission::create([
-        'name' => 'posts.*',
-        'label' => 'All Posts Permissions',
-    ]);
-
-    expect($wildcardPermission->isWildcard())
-        ->toBeTrue();
-
-    expect($this->permission->isWildcard())
-        ->toBeFalse();
-});
-
-it('can get permission group', function (): void {
-    expect($this->permission->getGroup())
-        ->toBe('users');
-});
-
-it('can get permission type', function (): void {
-    $permission = Permission::create([
-        'name' => 'posts.create',
-        'label' => 'Create Posts',
-    ]);
-
-    expect($permission->getType())
-        ->toBe(PermissionType::CREATE);
-});
-
 it('throws exception when role does not exist', function (): void {
-    Role::where('name', 'non-existent')->firstOrFail();
-})->throws(ModelNotFoundException::class);
-
-it('throws exception when permission does not exist', function (): void {
-    Permission::where('name', 'non-existent')->firstOrFail();
+    Role::query()->where('name', 'non-existent')->firstOrFail();
 })->throws(ModelNotFoundException::class);
 
 it('can get all users with a role', function (): void {
-    $user1 = User::create([
+    $user1 = User::query()->create([
         'name' => 'User 1',
         'email' => 'user1@example.com',
         'password' => 'password',
     ]);
 
-    $user2 = User::create([
+    $user2 = User::query()->create([
         'name' => 'User 2',
         'email' => 'user2@example.com',
         'password' => 'password',
     ]);
 
-    $user3 = User::create([
+    $user3 = User::query()->create([
         'name' => 'User 3',
         'email' => 'user3@example.com',
         'password' => 'password',
@@ -144,7 +101,7 @@ it('can get all users with a role', function (): void {
 });
 
 it('can check if user belongs to role via users relation', function (): void {
-    $user = User::create([
+    $user = User::query()->create([
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',

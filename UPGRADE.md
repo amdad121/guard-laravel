@@ -1,6 +1,6 @@
 # Upgrade Guide
 
-Current Version: **v1.0.0**
+Current Version: **v1.1.0**
 
 ## Quick Upgrade
 
@@ -28,9 +28,68 @@ Current Version: **v1.0.0**
    php artisan cache:clear
    ```
 
+## Breaking Changes
+
+### HasRoles Trait
+
+- `assignRole()` now returns `self` instead of `Model`
+- `revokeRole()` signature changed to accept `RoleContract|Model|string`
+- New methods added: `syncRolesWithoutDetaching()`, `revokeRoles()`, `getRoleNames()`
+- Improved `hasRole()`, `hasAllRoles()`, `hasAnyRole()` to handle Collection types
+
+### HasPermissions Trait
+
+- New method added: `revokeAllPermissions()`
+- New method added: `hasPermissionTo()`
+- New helper method: `getPermissionIdByName()`
+
+### Models
+
+- Revoked `static $table` pattern from `Permission` and `Role` models
+
+## Migration Guide
+
+### If you have custom User model
+
+Update your User model to use the trait properly:
+
+```php
+use AmdadulHaq\Guard\Contracts\User as UserContract;
+use AmdadulHaq\Guard\HasRoles;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class User extends Authenticatable implements UserContract
+{
+    use HasRoles; // Now returns self for fluent chaining
+
+    public function assignRole($role)
+    {
+        // Method signature unchanged
+    }
+
+    // Ensure revokeRoles() method is added if needed
+    public function revokeRoles()
+    {
+        return $this->roles()->detach();
+    }
+}
+```
+
+### Update your code
+
+If you were using the old `detach()` in `syncRoles()`:
+
+```php
+// Old code (will still work)
+$user->syncRoles([$role1->id, $role2->id]);
+
+// Use new syncRolesWithoutDetaching() instead of syncRoles() for partial sync
+$user->syncRolesWithoutDetaching(['editor', 'moderator']);
+```
+
 ## That's It!
 
-No breaking changes. Your application should work immediately after these steps.
+Your application should work immediately after these steps. All existing functionality remains intact.
 
 ## Need Help?
 

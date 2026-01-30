@@ -41,4 +41,11 @@ interface Role
      * @return int Number of permissions remaining
      */
     public function revokePermissionTo(PermissionContract $permission): int;
+
+    /**
+     * Get the names of all permissions for the role.
+     *
+     * @return array<int, string>
+     */
+    public function getPermissionNames(): array;
 }

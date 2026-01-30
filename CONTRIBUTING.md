@@ -30,10 +30,10 @@ Ensure your code follows Laravel Pint standards:
 
 ```bash
 # Check code style
-composer format:check
+composer lint:check
 
 # Fix code style
-composer format
+composer lint
 ```
 
 ## Static Analysis
@@ -49,7 +49,7 @@ composer analyse
 1. Create a new branch from `main`
 2. Write tests for your changes
 3. Ensure all tests pass (`composer test`)
-4. Ensure code style passes (`composer format:check`)
+4. Ensure code style passes (`composer lint:check`)
 5. Ensure static analysis passes (`composer analyse`)
 6. Submit a pull request with a clear description of changes
 

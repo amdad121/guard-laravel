@@ -2,6 +2,52 @@
 
 All notable changes to `guard-laravel` will be documented in this file.
 
+## v1.1.0 - 2026-01-30
+
+### 🔨 Breaking Changes
+
+- Removed deprecated `detach()` usage in `syncRoles()` method
+- Changed return type of `assignRole()` from `Model` to `self`
+- Changed `revokeRole()` return type from `int` to `int` (number of roles remaining)
+
+### ✨ New Features
+
+- **HasPermissions Trait**:
+  - Added `revokeAllPermissions()` method to revoke all permissions
+  - Added `hasPermissionTo()` method to check if role has a permission
+
+- **HasRoles Trait**:
+  - Added `syncRolesWithoutDetaching()` method to sync roles without detaching
+  - Added `revokeRole()` method to revoke a single role
+  - Added `revokeRoles()` method to revoke all roles
+  - Added `getRoleNames()` method to get all role names
+  - Improved `hasRole()` to handle Collection types
+  - Improved `hasAllRoles()` and `hasAnyRole()` to handle Collection types
+  - Simplified wildcard matching using `contains()` with closure
+
+- **Models**:
+  - Removed outdated `static $table` pattern from `Permission` and `Role` models
+  - Now uses Laravel's built-in `getTable()` with config fallback
+
+- **Service Provider**:
+  - Fixed `permissionsTableExists()` to use config table name
+  - Improved `registerModelObservers()` readability using `->each()`
+  - Improved `defineGatePermissions()` and `defineGateRoles()` readability
+
+### 📚 Documentation
+
+- Added comprehensive Laravel-style documentation comments to config file
+- Added docblocks to all methods in Service Provider
+- Updated configuration documentation with type casting examples
+- Updated Contributing guide with correct script names
+- Updated code examples for new methods
+
+### 🛠️ Code Quality
+
+- Improved type hints throughout codebase
+- Added proper exception handling documentation
+- Refactored code for better readability and maintainability
+
 ## v1.0.0 - 2025-01-01
 
 ### 🎉 Initial Stable Release

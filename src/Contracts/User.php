@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace AmdadulHaq\Guard\Contracts;
 
 use AmdadulHaq\Guard\Contracts\Role as RoleContract;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Collection;
 
 interface User
 {
@@ -48,20 +48,6 @@ interface User
     public function hasRole(string|array|Collection $role): bool;
 
     /**
-     * Check if the user has a specific permission.
-     *
-     * @return bool True if user has the permission
-     */
-    public function hasPermission(Model $permission): bool;
-
-    /**
-     * Check if the user has a specific permission by name.
-     *
-     * @return bool True if user has the permission
-     */
-    public function hasPermissionByName(string $permission): bool;
-
-    /**
      * Check if the user has all specified roles.
      *
      * @param  string|array|Collection  $roles  Role name(s) or collection
@@ -74,4 +60,11 @@ interface User
      * @param  string|array|Collection  $roles  Role name(s) or collection
      */
     public function hasAnyRole(string|array|Collection ...$roles): bool;
+
+    /**
+     * Check if the user has a specific permission by name.
+     *
+     * @return bool True if user has the permission
+     */
+    public function hasPermissionByName(string $permission): bool;
 }

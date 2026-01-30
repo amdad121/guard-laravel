@@ -26,7 +26,7 @@ it('permission type has label method', function (): void {
 });
 
 it('caches permissions', function (): void {
-    Permission::create(['name' => 'test.permission']);
+    Permission::query()->create(['name' => 'test.permission']);
 
     $cacheKey = CacheKey::PERMISSIONS->value;
 
@@ -40,7 +40,7 @@ it('caches permissions', function (): void {
 });
 
 it('caches roles', function (): void {
-    Role::create(['name' => 'test-role']);
+    Role::query()->create(['name' => 'test-role']);
 
     $cacheKey = CacheKey::ROLES->value;
 
@@ -54,7 +54,7 @@ it('caches roles', function (): void {
 });
 
 it('clears cache on role deletion', function (): void {
-    $role = Role::create(['name' => 'test-role']);
+    $role = Role::query()->create(['name' => 'test-role']);
 
     $cacheKey = CacheKey::ROLES->value;
     Cache::put($cacheKey, Role::all(), 3600);
@@ -67,7 +67,7 @@ it('clears cache on role deletion', function (): void {
 });
 
 it('clears cache on permission deletion', function (): void {
-    $permission = Permission::create(['name' => 'test.permission']);
+    $permission = Permission::query()->create(['name' => 'test.permission']);
 
     $cacheKey = CacheKey::PERMISSIONS->value;
     Cache::put($cacheKey, Permission::with('roles')->get(), 3600);

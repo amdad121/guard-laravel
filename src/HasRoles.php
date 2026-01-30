@@ -13,22 +13,33 @@ use Illuminate\Support\Collection;
 // @phpstan-ignore trait.unused
 trait HasRoles
 {
+    /**
+     * Get the roles relation.
+     */
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(config('guard.models.role'));
     }
 
-    public function assignRole(Model|string $role): Model
+    /**
+     * Assign a role to the model.
+     */
+    public function assignRole(Model|string $role): self
     {
         if (is_string($role)) {
-            $role = resolve(config('guard.models.role'))->where('name', $role)->firstOrFail();
+            $role = config('guard.models.role')::query()
+                ->where('name', $role)
+                ->firstOrFail();
         }
 
-        $this->roles()->save($role);
+        $this->roles()->attach($role);
 
         return $this;
     }
 
+    /**
+     * Sync roles to the model.
+     */
     public function syncRoles(array $roles): array
     {
         $roleIds = $this->getRoleIds($roles);
@@ -37,49 +48,63 @@ trait HasRoles
     }
 
     /**
-     * Get role IDs from array of IDs or names.
-     *
-     * @param  array<int, int|string>  $roles
-     * @return array<int, int>
+     * Sync roles to the model without detaching.
      */
-    protected function getRoleIds(array $roles): array
+    public function syncRolesWithoutDetaching(array $roles): array
     {
-        return collect($roles)
-            ->map(function ($role) {
-                if (is_numeric($role)) {
-                    return (int) $role;
-                }
+        $roleIds = $this->getRoleIds($roles);
 
-                return config('guard.models.role')::where('name', $role)->first()?->id;
-            })
-            ->filter()
-            ->values()
-            ->toArray();
+        return $this->roles()->syncWithoutDetaching($roleIds);
     }
 
+    /**
+     * Revoke a role from the model.
+     */
     public function revokeRole(RoleContract|Model|string $role): int
     {
         if (is_string($role)) {
-            $role = resolve(config('guard.models.role'))->where('name', $role)->first();
+            $role = config('guard.models.role')::query()
+                ->where('name', $role)
+                ->first();
         }
 
-        $this->roles()->detach($role);
-
-        return $this->roles()->count();
+        return $this->roles()->detach($role);
     }
 
+    /**
+     * Revoke all roles from the model.
+     */
+    public function revokeRoles(): int
+    {
+        return $this->roles()->detach();
+    }
+
+    /**
+     * Check if model has the given role.
+     */
     public function hasRole(string|array|Collection $role): bool
     {
         if (is_string($role)) {
             return $this->roles->contains('name', $role);
         }
 
-        return (bool) $role->intersect($this->roles)->count();
+        if ($role instanceof Collection) {
+            $role = $role->pluck('name');
+        }
+
+        if (is_array($role) && $role !== [] && is_array($role[0])) {
+            $role = collect($role)->flatten()->all();
+        }
+
+        return (bool) collect($role)->intersect($this->roles->pluck('name'))->count();
     }
 
+    /**
+     * Check if model has all of the given roles.
+     */
     public function hasAllRoles(string|array|Collection ...$roles): bool
     {
-        if (count($roles) === 1 && ! is_string($roles[0]) && ! $roles[0] instanceof Collection) {
+        if (count($roles) === 1 && is_array($roles[0]) && $roles[0] !== [] && ! $roles[0] instanceof Collection) {
             $roles = $roles[0];
         }
 
@@ -92,91 +117,61 @@ trait HasRoles
         return true;
     }
 
+    /**
+     * Check if model has any of the given roles.
+     */
     public function hasAnyRole(string|array|Collection ...$roles): bool
     {
-        if (count($roles) === 1 && ! is_string($roles[0]) && ! $roles[0] instanceof Collection) {
+        if (count($roles) === 1 && is_array($roles[0]) && $roles[0] !== [] && ! $roles[0] instanceof Collection) {
             $roles = $roles[0];
         }
 
-        return (bool) collect($roles)->intersect($this->roles->pluck('name'))->count();
-    }
+        $roleNames = collect($roles);
 
-    public function hasPermission(Model|string $permission): bool
-    {
-        if (is_string($permission)) {
-            return $this->hasPermissionByName($permission);
+        if (count($roleNames) > 1) {
+            $roleNames = $roleNames->flatten();
         }
 
-        return $this->hasPermissionByName($permission->name);
-    }
-
-    public function hasPermissionByName(string $permission): bool
-    {
-        $allPermissions = $this->getAllPermissionNames();
-
-        if ($allPermissions->contains($permission)) {
-            return true;
-        }
-
-        return $this->matchesWildcardPermission($permission, $allPermissions);
+        return (bool) $roleNames->intersect($this->roles->pluck('name'))->count();
     }
 
     /**
-     * @return Collection<int, string>
+     * Get the role names.
      */
-    protected function getAllPermissionNames(): Collection
+    public function getRoleNames(): array
     {
-        return $this->roles->flatMap(fn ($role) => $role->permissions->pluck('name'));
-    }
-
-    protected function matchesWildcardPermission(string $permission, Collection $allPermissions): bool
-    {
-        $permissionParts = explode('.', $permission);
-
-        foreach ($allPermissions as $perm) {
-            if (! str_ends_with((string) $perm, '*')) {
-                continue;
-            }
-
-            $wildcardParts = array_filter(explode('.', rtrim((string) $perm, '*')));
-
-            if (! $this->checkWildcardMatch($permissionParts, $wildcardParts)) {
-                continue;
-            }
-
-            return true;
-        }
-
-        return false;
+        return $this->roles->pluck('name')->toArray();
     }
 
     /**
-     * @param  array<int, string>  $permissionParts
-     * @param  array<int, string>  $wildcardParts
+     * Get role IDs from array of IDs or names.
      */
-    protected function checkWildcardMatch(array $permissionParts, array $wildcardParts): bool
+    protected function getRoleIds(array $roles): array
     {
-        foreach ($wildcardParts as $index => $part) {
-            if (! isset($permissionParts[$index]) || $permissionParts[$index] !== $part) {
-                return false;
-            }
-        }
-
-        return true;
+        return collect($roles)
+            ->map(fn ($role) => is_numeric($role) ? (int) $role : $this->getRoleIdByName($role))
+            ->filter()
+            ->values()
+            ->toArray();
     }
 
-    public function getPermissions(): Collection
+    /**
+     * Get role ID by name.
+     */
+    protected function getRoleIdByName(string $roleName): ?int
     {
-        return $this->roles->pluck('permissions')->flatten()->unique('id');
+        $roleModel = config('guard.models.role');
+
+        return $roleModel::query()
+            ->where('name', $roleName)
+            ->first()?->id;
     }
 
+    /**
+     * Scope a query to include models with specific roles.
+     */
     protected function scopeWithRoles(Builder $query, string|array $roles): Builder
     {
-        return $query->whereHas('roles', fn ($q) => $q->whereIn('name', (array) $roles));
-    }
-
-    protected function scopeWithPermissions(Builder $query, string|array $permissions): Builder
-    {
-        return $query->whereHas('roles.permissions', fn ($q) => $q->whereIn('name', (array) $permissions));
+        return $query->whereHas('roles', fn (Builder $q) => $q->whereIn('name', (array) $roles));
     }
 }

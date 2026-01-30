@@ -60,7 +60,7 @@ class CreateRole extends Command implements PromptsForMissingInput
             );
         }
 
-        $role = Role::firstOrCreate(['name' => $name], ['name' => $name, 'label' => $label]);
+        $role = Role::query()->firstOrCreate(['name' => $name], ['name' => $name, 'label' => $label]);
 
         $message = '';
 
