@@ -59,12 +59,12 @@ class CreatePermission extends Command implements PromptsForMissingInput
             );
         }
 
-        $permission = Permission::firstOrCreate(['name' => $name], ['name' => $name, 'label' => $label]);
+        $permission = Permission::query()->firstOrCreate(['name' => $name], ['name' => $name, 'label' => $label]);
 
         $message = '';
 
         if ($roleId) {
-            $role = Role::find($roleId);
+            $role = Role::query()->find($roleId);
 
             if ($role) {
                 $role->givePermissionTo($permission);

@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property string $name
+ * @property string|null $label
+ * @property string|null $description
  * @property bool $is_guarded
  */
 class Role extends Model implements RoleContract
@@ -21,11 +23,6 @@ class Role extends Model implements RoleContract
     /** @var array<int, string> */
     protected $guarded = [];
 
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
     protected function casts(): array
     {
         return [
@@ -33,15 +30,14 @@ class Role extends Model implements RoleContract
         ];
     }
 
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
     public function getTable(): string
     {
-        static $table;
-
-        if ($table === null) {
-            $table = config('guard.tables.roles', parent::getTable());
-        }
-
-        return $table;
+        return config('guard.tables.roles', parent::getTable());
     }
 
     public function permissions(): BelongsToMany
@@ -54,16 +50,6 @@ class Role extends Model implements RoleContract
         return $this->belongsToMany(config('guard.models.user'), 'role_user');
     }
 
-    protected function scopeGuarded(Builder $query): Builder
-    {
-        return $query->where('is_guarded', true);
-    }
-
-    protected function scopeUnguarded(Builder $query): Builder
-    {
-        return $query->where('is_guarded', false);
-    }
-
     public function isProtectedRole(): bool
     {
         return $this->is_guarded ?? false;
@@ -72,5 +58,15 @@ class Role extends Model implements RoleContract
     public function getPermissionNames(): array
     {
         return $this->permissions->pluck('name')->toArray();
+    }
+
+    protected function scopeGuarded(Builder $query): Builder
+    {
+        return $query->where('is_guarded', true);
+    }
+
+    protected function scopeUnguarded(Builder $query): Builder
+    {
+        return $query->where('is_guarded', false);
     }
 }

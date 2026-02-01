@@ -127,9 +127,9 @@ return [
         'permissions' => 'permissions',
     ],
     'cache' => [
-        'permissions_duration' => env('GUARD_PERMISSIONS_CACHE_DURATION', 3600),
-        'roles_duration' => env('GUARD_ROLES_CACHE_DURATION', 3600),
         'enabled' => env('GUARD_CACHE_ENABLED', true),
+        'roles_duration' => (int) env('GUARD_ROLES_CACHE_DURATION', 3600),
+        'permissions_duration' => (int) env('GUARD_PERMISSIONS_CACHE_DURATION', 3600),
     ],
     'middleware' => [
         'role' => 'role',
@@ -189,17 +189,30 @@ $user->hasPermission('posts.delete'); // true
 ### Assigning Permissions to Roles
 
 ```php
-// Assign a single permission
+use AmdadulHaq\Guard\Models\Permission;
+
+// Assign a single permission by model
 $role->givePermissionTo($permission);
+
+// Assign a single permission by name
 $role->givePermissionTo('users.create');
 
 // Sync multiple permissions (supports both IDs and names)
 $role->syncPermissions([$permission1->id, $permission2->id]);
 $role->syncPermissions(['users.create', 'users.edit', 'users.delete']);
 
-// Revoke a permission
+// Sync without detaching existing permissions
+$role->syncRolesWithoutDetaching(['editor', 'moderator']);
+
+// Revoke a specific permission
 $role->revokePermissionTo($permission);
 $role->revokePermissionTo('users.delete');
+
+// Revoke all permissions
+$role->revokeAllPermissions();
+
+// Check if role has a permission
+$role->hasPermissionTo('users.edit'); // true or false
 ```
 
 ### Assigning Roles to Users
@@ -218,8 +231,24 @@ $user->assignRole('administrator');
 // Sync multiple roles
 $user->syncRoles([$role1->id, $role2->id]);
 
-// Revoke a role
+// Sync without detaching existing roles
+$user->syncRolesWithoutDetaching(['editor', 'moderator']);
+
+// Revoke a specific role
 $user->revokeRole($role);
+$user->revokeRole('editor');
+
+// Revoke all roles
+$user->revokeRoles();
+
+// Get all role names
+$user->getRoleNames(); // ['administrator', 'editor']
+
+// Check if model has all specified roles
+$user->hasAllRoles(['admin', 'editor']); // true if user has both
+
+// Check if model has any of the specified roles
+$user->hasAnyRole(['admin', 'editor']); // true if user has at least one
 ```
 
 ### Direct User Permissions
@@ -242,6 +271,9 @@ $user->syncPermissions(['posts.create', 'posts.update', 'posts.delete']);
 
 // Revoke specific permission
 $user->revokePermissionTo('posts.delete');
+
+// Revoke all permissions
+$user->revokeAllPermissions();
 
 // Check if user has direct permission
 $user->hasDirectPermission('posts.create'); // true
@@ -422,9 +454,9 @@ Role::unguarded()->get(); // Get all unguarded roles
 The package automatically caches permissions and roles. Clear cache manually:
 
 ```php
-use AmdadulHaq\Guard\GuardServiceProvider;
+use AmdadulHaq\Guard\Facades\Guard;
 
-GuardServiceProvider::staticClearCache();
+Guard::clearCache();
 ```
 
 Cache is automatically invalidated when roles or permissions are created, updated, or deleted.

@@ -10,6 +10,7 @@ use AmdadulHaq\Guard\Contracts\Permission as PermissionContract;
 use AmdadulHaq\Guard\Contracts\Role as RoleContract;
 use AmdadulHaq\Guard\Contracts\User as UserContract;
 use AmdadulHaq\Guard\Enums\CacheKey;
+use AmdadulHaq\Guard\Facades\Guard;
 use AmdadulHaq\Guard\Middleware\PermissionMiddleware;
 use AmdadulHaq\Guard\Middleware\RoleMiddleware;
 use AmdadulHaq\Guard\Middleware\RoleOrPermissionMiddleware;
@@ -25,6 +26,9 @@ use Throwable;
 
 class GuardServiceProvider extends ServiceProvider
 {
+    /**
+     * Register services.
+     */
     public function register(): void
     {
         $this->mergeConfigFrom(
@@ -36,6 +40,9 @@ class GuardServiceProvider extends ServiceProvider
         $this->app->bind(RoleContract::class, fn () => resolve(config('guard.models.role')));
     }
 
+    /**
+     * Bootstrap services.
+     */
     public function boot(): void
     {
         $this->publishConfig();
@@ -50,6 +57,33 @@ class GuardServiceProvider extends ServiceProvider
         }
     }
 
+    /**
+     * Define gate permissions for the application.
+     */
+    public function defineGatePermissions(): void
+    {
+        $this->getPermissions()
+            ->each(fn (Permission $permission) => Gate::define(
+                $permission->getName(),
+                fn (UserContract $user): bool => $user->hasPermissionByName($permission->getName())
+            ));
+    }
+
+    /**
+     * Define gate roles for the application.
+     */
+    public function defineGateRoles(): void
+    {
+        $this->getRoles()
+            ->each(fn (Role $role) => Gate::define(
+                $role->getName(),
+                fn (UserContract $user): bool => $user->hasRole($role->getName())
+            ));
+    }
+
+    /**
+     * Publish the configuration file.
+     */
     protected function publishConfig(): void
     {
         $this->publishes([
@@ -57,6 +91,9 @@ class GuardServiceProvider extends ServiceProvider
         ], 'guard-config');
     }
 
+    /**
+     * Publish the migration files.
+     */
     protected function publishMigrations(): void
     {
         $this->publishes([
@@ -65,6 +102,9 @@ class GuardServiceProvider extends ServiceProvider
         ], 'guard-migrations');
     }
 
+    /**
+     * Register the console commands for this package.
+     */
     protected function registerCommands(): void
     {
         $this->commands([
@@ -73,6 +113,9 @@ class GuardServiceProvider extends ServiceProvider
         ]);
     }
 
+    /**
+     * Register the package middleware.
+     */
     protected function registerMiddleware(): void
     {
         $router = $this->app->make(Router::class);
@@ -82,47 +125,38 @@ class GuardServiceProvider extends ServiceProvider
         $router->aliasMiddleware('role_or_permission', RoleOrPermissionMiddleware::class);
     }
 
+    /**
+     * Register model observers for cache clearing.
+     */
     protected function registerModelObservers(): void
     {
-        foreach ([Role::class, Permission::class] as $model) {
-            $model::saved(fn () => $this->clearCache());
-            $model::deleted(fn () => $this->clearCache());
-        }
+        collect([Role::class, Permission::class])
+            ->each(function (string $model): void {
+                $model::saved(fn () => Guard::clearCache());
+                $model::deleted(fn () => Guard::clearCache());
+            });
     }
 
+    /**
+     * Check if the permissions table exists.
+     */
     protected function permissionsTableExists(): bool
     {
         try {
-            return Schema::hasTable('permissions');
+            return Schema::hasTable(config('guard.tables.permissions'));
         } catch (Throwable) {
             return false;
         }
     }
 
-    public function defineGatePermissions(): void
-    {
-        foreach ($this->getPermissions() as $permission) {
-            $permissionName = $permission->getName();
-            Gate::define($permissionName, fn (UserContract $user): bool => $user->hasPermissionByName($permissionName));
-        }
-    }
-
-    public function defineGateRoles(): void
-    {
-        foreach ($this->getRoles() as $role) {
-            $roleName = $role->getName();
-            Gate::define($roleName, fn (UserContract $user): bool => $user->hasRole($roleName));
-        }
-    }
-
     /**
+     * Get all permissions from cache or database.
+     *
      * @return Collection<int, Permission>
      */
     protected function getPermissions(): Collection
     {
-        $cacheEnabled = config('guard.cache.enabled', true);
-
-        if (! $cacheEnabled) {
+        if (! config('guard.cache.enabled', true)) {
             return Permission::with('roles')->get();
         }
 
@@ -132,30 +166,18 @@ class GuardServiceProvider extends ServiceProvider
     }
 
     /**
+     * Get all roles from cache or database.
+     *
      * @return Collection<int, Role>
      */
     protected function getRoles(): Collection
     {
-        $cacheEnabled = config('guard.cache.enabled', true);
-
-        if (! $cacheEnabled) {
+        if (! config('guard.cache.enabled', true)) {
             return Role::all();
         }
 
         $cacheDuration = config('guard.cache.roles_duration', 3600);
 
         return Cache::remember(CacheKey::ROLES->value, $cacheDuration, fn () => Role::all());
-    }
-
-    public function clearCache(): void
-    {
-        Cache::forget(CacheKey::PERMISSIONS->value);
-        Cache::forget(CacheKey::ROLES->value);
-    }
-
-    public static function staticClearCache(): void
-    {
-        Cache::forget(CacheKey::PERMISSIONS->value);
-        Cache::forget(CacheKey::ROLES->value);
     }
 }

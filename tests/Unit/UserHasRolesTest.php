@@ -3,20 +3,20 @@
 declare(strict_types=1);
 
 use AmdadulHaq\Guard\Exceptions\PermissionDeniedException;
-use AmdadulHaq\Guard\GuardServiceProvider;
+use AmdadulHaq\Guard\Facades\Guard;
 use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
 use AmdadulHaq\Guard\Tests\Models\User;
 
 beforeEach(function (): void {
-    $this->user = User::create([
+    $this->user = User::query()->create([
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
     ]);
 
-    $this->role = Role::create(['name' => 'admin']);
-    $this->permission = Permission::create(['name' => 'users.create']);
+    $this->role = Role::query()->create(['name' => 'admin']);
+    $this->permission = Permission::query()->create(['name' => 'users.create']);
 });
 
 it('can assign role to user', function (): void {
@@ -36,7 +36,7 @@ it('can assign role to user by name', function (): void {
 });
 
 it('can sync roles to user', function (): void {
-    $role2 = Role::create(['name' => 'editor']);
+    $role2 = Role::query()->create(['name' => 'editor']);
 
     $this->user->syncRoles([$this->role->id, $role2->id]);
 
@@ -67,7 +67,7 @@ it('can check if user has role', function (): void {
 });
 
 it('can check if user has all roles', function (): void {
-    $role2 = Role::create(['name' => 'editor']);
+    $role2 = Role::query()->create(['name' => 'editor']);
 
     $this->user->syncRoles([$this->role->id, $role2->id]);
 
@@ -89,8 +89,8 @@ it('can check if user has any role', function (): void {
 });
 
 it('can get all user roles', function (): void {
-    $role2 = Role::create(['name' => 'editor']);
-    $role3 = Role::create(['name' => 'moderator']);
+    $role2 = Role::query()->create(['name' => 'editor']);
+    $role3 = Role::query()->create(['name' => 'moderator']);
 
     $this->user->syncRoles([$this->role->id, $role2->id, $role3->id]);
 
@@ -117,10 +117,10 @@ it('can check if user has permission via role', function (): void {
 });
 
 it('can get all user permissions from roles', function (): void {
-    $permission2 = Permission::create(['name' => 'users.update']);
+    $permission2 = Permission::query()->create(['name' => 'users.update']);
 
     $this->role->givePermissionTo($this->permission);
-    $role2 = Role::create(['name' => 'editor']);
+    $role2 = Role::query()->create(['name' => 'editor']);
     $role2->givePermissionTo($permission2);
 
     $this->user->syncRoles([$this->role->id, $role2->id]);
@@ -137,11 +137,11 @@ it('can get all user permissions from roles', function (): void {
 });
 
 it('can get all user permission names', function (): void {
-    $permission2 = Permission::create(['name' => 'users.update']);
-    $permission3 = Permission::create(['name' => 'users.delete']);
+    $permission2 = Permission::query()->create(['name' => 'users.update']);
+    $permission3 = Permission::query()->create(['name' => 'users.delete']);
 
     $this->role->givePermissionTo($this->permission);
-    $role2 = Role::create(['name' => 'editor']);
+    $role2 = Role::query()->create(['name' => 'editor']);
     $role2->givePermissionTo($permission2);
 
     $this->user->syncRoles([$this->role->id, $role2->id]);
@@ -158,7 +158,7 @@ it('can get all user permission names', function (): void {
 });
 
 it('can check wildcard permissions', function (): void {
-    $wildcardPermission = Permission::create(['name' => 'users.*']);
+    $wildcardPermission = Permission::query()->create(['name' => 'users.*']);
     $this->role->givePermissionTo($wildcardPermission);
     $this->user->assignRole($this->role);
 
@@ -182,7 +182,7 @@ it('defines gate for permissions', function (): void {
     $this->user->refresh();
 
     // Clear cache to ensure permissions are picked up
-    GuardServiceProvider::staticClearCache();
+    Guard::clearCache();
 
     // Test that permission gate works via user method
     $hasPermission = $this->user->hasPermissionByName('users.create');
@@ -194,7 +194,7 @@ it('defines gate for roles', function (): void {
     $this->user->refresh();
 
     // Clear cache to ensure roles are picked up
-    GuardServiceProvider::staticClearCache();
+    Guard::clearCache();
 
     // Test that role gate works via user method
     $hasRole = $this->user->hasRole('admin');
