@@ -6,8 +6,8 @@ namespace AmdadulHaq\Guard;
 
 use AmdadulHaq\Guard\Commands\CreatePermission;
 use AmdadulHaq\Guard\Commands\CreateRole;
-use AmdadulHaq\Guard\Contracts\Permission as PermissionContract;
-use AmdadulHaq\Guard\Contracts\Role as RoleContract;
+use AmdadulHaq\Guard\Contracts\Permissions as PermissionsContract;
+use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
 use AmdadulHaq\Guard\Contracts\User as UserContract;
 use AmdadulHaq\Guard\Enums\CacheKey;
 use AmdadulHaq\Guard\Facades\Guard;
@@ -36,8 +36,8 @@ class GuardServiceProvider extends ServiceProvider
             'guard'
         );
 
-        $this->app->bind(PermissionContract::class, fn () => resolve(config('guard.models.permission')));
-        $this->app->bind(RoleContract::class, fn () => resolve(config('guard.models.role')));
+        $this->app->bind(PermissionsContract::class, fn () => resolve(config('guard.models.permission')));
+        $this->app->bind(RolesContract::class, fn () => resolve(config('guard.models.role')));
     }
 
     /**

@@ -11,14 +11,26 @@ use Illuminate\Http\Request;
 
 class PermissionMiddleware
 {
-    public function handle(Request $request, Closure $next, string $permission): mixed
+    public function handle(Request $request, Closure $next, string ...$permissions): mixed
     {
         $user = $request->user();
 
         abort_unless($user instanceof UserContract, 403, 'Unauthenticated.');
 
-        if (! $user->hasPermissionByName($permission)) {
-            throw PermissionDeniedException::create($permission);
+        // Flatten permissions array (handles both 'users.create,users.edit' and 'users.create', 'users.edit' formats)
+        $flattenedPermissions = collect($permissions)->flatMap(fn ($permission): array => explode(',', $permission))->all();
+
+        // Check if user has ANY of the provided permissions
+        $hasAnyPermission = false;
+        foreach ($flattenedPermissions as $permission) {
+            if ($user->hasPermissionByName($permission)) {
+                $hasAnyPermission = true;
+                break;
+            }
+        }
+
+        if (! $hasAnyPermission) {
+            throw PermissionDeniedException::create(implode(', ', $flattenedPermissions));
         }
 
         return $next($request);

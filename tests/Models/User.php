@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Tests\Models;
 
+use AmdadulHaq\Guard\Concerns\HasPermissions;
+use AmdadulHaq\Guard\Concerns\HasRoles;
 use AmdadulHaq\Guard\Contracts\User as UserContract;
-use AmdadulHaq\Guard\HasPermissions;
-use AmdadulHaq\Guard\HasRoles;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Model implements UserContract
+class User extends Authenticatable implements UserContract
 {
     use HasPermissions;
     use HasRoles;

@@ -2,6 +2,93 @@
 
 All notable changes to `guard-laravel` will be documented in this file.
 
+## v1.3.0 - 2026-02-02
+
+### 🔨 Breaking Changes
+
+- **Contracts renamed**: `HasRoles` → `Roles`, `HasPermissions` → `Permissions`
+- **Traits moved to Concerns directory**: All traits now in `src/Concerns/`
+- **Middleware updates**: All middlewares now support multiple roles/permissions via variadic parameters
+- **Method signatures updated**: All model assignment methods now accept `Model|string` parameters
+- **Shared concerns added**: `ChecksRoles` and `ResolvesModels` traits for DRY principle
+
+### ✨ New Features
+
+- **Improved Architecture**:
+  - Contracts and traits properly separated with no naming conflicts
+  - New `ChecksRoles` trait with shared role checking logic
+  - New `ResolvesModels` trait with shared model resolution logic
+  - Better type hints throughout codebase
+  - Improved code organization and maintainability
+
+- **Middleware Enhancements**:
+  - `RoleMiddleware`: Now supports multiple roles (comma-separated or variadic)
+  - `PermissionMiddleware`: Now supports multiple permissions
+  - `RoleOrPermissionMiddleware`: Now supports multiple roles or permissions
+  - All middlewares handle both formats: `role:admin,editor` or `role:admin`, `role:editor`
+
+- **Code Quality**:
+  - 0 static analysis errors (Larastan)
+  - All files pass Laravel Pint linting
+  - Follows SOLID principles
+  - Proper separation of concerns
+
+- **Testing**:
+  - Added comprehensive middleware tests (10 new tests)
+  - Test User model now extends Authenticatable (proper Laravel usage)
+  - All 42 tests passing (77 assertions)
+  - 35 source files
+
+- **Documentation**:
+  - Updated README with new architecture
+  - Complete UPGRADE.md guide
+  - Clarified middleware usage with examples
+
+### 📚 Documentation
+
+- Updated README.md with new contract and trait structure
+- Comprehensive UPGRADE.md with migration guide
+- Added examples for middleware multiple parameters
+- Clarified import statements for new structure
+
+### 🛠️ Code Quality
+
+- Refactored code to follow DRY principle
+- Improved type hints for better IDE support
+- Better documentation comments
+- Enhanced error messages
+
+### 🔄 Migration Requirements
+
+Users upgrading to v1.3.0 need to:
+
+1. Update imports from `Guard\HasRoles` to `Guard\Concerns\HasRoles`
+2. Update imports from `Guard\HasPermissions` to `Guard\Concerns\HasPermissions`
+3. Update middleware usage to support multiple roles/permissions (if needed)
+4. Test application thoroughly after upgrade
+
+### 📊 Statistics
+
+- **Source files**: 35 (increased from 26)
+- **Tests passing**: 42 (increased from 36)
+- **Assertions**: 77 (increased from 69)
+- **Static analysis**: 0 errors
+- **Code quality**: All files pass Laravel Pint
+
+### 🐛 Bug Fixes
+
+- Fixed middleware exception handling in test environment
+- Improved type resolution in model assignment methods
+- Fixed import paths in test files
+
+### 🎯 Improvements
+
+- **SOLID Principles**: Better separation of concerns
+- **DRY Principle**: Shared traits reduce code duplication
+- **Naming Conventions**: Traits in Concerns, contracts as interfaces
+- **Flexibility**: Middleware now supports multiple parameters
+- **Maintainability**: Better code organization
+
 ## v1.1.0 - 2026-01-30
 
 ### 🔨 Breaking Changes
