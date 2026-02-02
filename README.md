@@ -68,6 +68,7 @@ Route::middleware('role:admin')->get('/admin', [AdminController::class, 'index']
 - ⚡ **Smart Caching** - Automatic cache invalidation for optimal performance
 - 🔑 **Laravel Gate Integration** - Native `@can`, `@canany`, `@cannot` support
 - 🛡️ **Middleware Protection** - `role`, `permission`, and `role_or_permission` middleware
+- 🎨 **Blade Directives** - `@role`, `@hasrole`, `@hasanyrole`, `@hasallroles`
 - 📦 **Type-Safe Enums** - IDE-friendly `PermissionType` and `CacheKey` enums
 - 🏰 **Guarded Roles** - Protect critical roles from accidental deletion
 - 📁 **Permission Groups** - Organize permissions by resource
