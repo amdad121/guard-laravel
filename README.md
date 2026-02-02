@@ -54,10 +54,11 @@ If you find Guard Laravel helpful, please consider **sponsoring** the project. Y
 
 - **PHP 8.2, 8.3, 8.4, & 8.5 & Laravel 10, 11, & 12** - Modern PHP and Laravel features
 - **Role & Permission Management** - Create and manage roles with permissions
+- **Separate Concerns** - Traits and contracts are properly separated for better maintainability
 - **Wildcard Permissions** - Use wildcard patterns like `posts.*` for flexible permission checking
 - **Permission Groups** - Organize permissions into groups
 - **Guarded Roles** - Protect certain roles from deletion/modification
-- **Custom Middleware** - Built-in middleware for route protection
+- **Multiple Roles/Permissions** - Middleware now supports multiple roles/permissions at once
 - **Cache Support** - Intelligent caching with automatic invalidation
 - **Query Scopes** - Filter users by roles and permissions
 - **Custom Exceptions** - Better error messages
@@ -85,17 +86,19 @@ php artisan vendor:publish --tag="guard-migrations"
 php artisan migrate
 ```
 
-Add the `HasRoles` trait and `UserContract` interface to your User model:
+Add the `HasRoles` trait and `User` interface to your User model:
 
 ```php
 namespace App\Models;
 
 use AmdadulHaq\Guard\Contracts\User as UserContract;
-use AmdadulHaq\Guard\HasRoles;
+use AmdadulHaq\Guard\Concerns\HasRoles;
+use AmdadulHaq\Guard\Concerns\HasPermissions;
 
 class User extends Authenticatable implements UserContract
 {
     use HasRoles;
+    use HasPermissions;
 }
 ```
 
@@ -276,13 +279,10 @@ $user->revokePermissionTo('posts.delete');
 $user->revokeAllPermissions();
 
 // Check if user has direct permission
-$user->hasDirectPermission('posts.create'); // true
-
-// Get all direct permissions for user
-$user->getDirectPermissions(); // Collection of permissions
+$user->hasPermission('posts.create'); // true
 
 // Get all permissions (roles + direct)
-$user->getAllPermissions(); // Collection of all permissions
+$user->getPermissions(); // Collection of all permissions
 ```
 
 ### Checking Roles
@@ -347,19 +347,37 @@ User::withPermissions('users.create')->get();
 
 ### Middleware
 
-Protect routes using built-in middleware:
+Protect routes using built-in middleware. All middlewares support multiple roles/permissions:
 
 ```php
+// Single permission
 Route::middleware('permission:users.create')->group(function () {
     Route::post('/users', [UserController::class, 'store']);
 });
 
+// Multiple permissions (requires any of them)
+Route::middleware('permission:users.create,users.edit')->group(function () {
+    Route::put('/users/{id}', [UserController::class, 'update']);
+});
+
+// Single role
 Route::middleware('role:administrator')->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 });
 
-Route::middleware('role_or_permission:users.create')->group(function () {
+// Multiple roles (requires any of them)
+Route::middleware('role:admin,editor')->group(function () {
+    Route::get('/admin', [AdminController::class, 'dashboard']);
+});
+
+// Role OR permission
+Route::middleware('role_or_permission:admin,users.create')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
+});
+
+// Multiple role_or_permission
+Route::middleware('role_or_permission:admin,editor,users.manage')->group(function () {
+    Route::post('/manage', [Controller::class, 'handle']);
 });
 ```
 

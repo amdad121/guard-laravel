@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace AmdadulHaq\Guard;
+namespace AmdadulHaq\Guard\Concerns;
 
-use AmdadulHaq\Guard\Contracts\Permission as PermissionContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,6 +17,8 @@ use Illuminate\Support\Collection;
  */
 trait HasPermissions
 {
+    use ResolvesModels;
+
     /**
      * Get the permissions relation.
      */
@@ -29,13 +30,9 @@ trait HasPermissions
     /**
      * Give a permission to the role.
      */
-    public function givePermissionTo(PermissionContract|string $permission): Model
+    public function givePermissionTo(Model|string $permission): Model
     {
-        if (is_string($permission)) {
-            $permission = config('guard.models.permission')::query()
-                ->where('name', $permission)
-                ->firstOrFail();
-        }
+        $permission = $this->resolvePermission($permission);
 
         return $this->permissions()->save($permission);
     }
@@ -51,13 +48,9 @@ trait HasPermissions
     /**
      * Revoke a permission from the role.
      */
-    public function revokePermissionTo(PermissionContract|string $permission): int
+    public function revokePermissionTo(Model|string $permission): int
     {
-        if (is_string($permission)) {
-            $permission = config('guard.models.permission')::query()
-                ->where('name', $permission)
-                ->firstOrFail();
-        }
+        $permission = $this->resolvePermission($permission);
 
         return $this->permissions()->detach($permission);
     }
@@ -73,13 +66,9 @@ trait HasPermissions
     /**
      * Check if the role has a permission.
      */
-    public function hasPermissionTo(PermissionContract|string $permission): bool
+    public function hasPermissionTo(Model|string $permission): bool
     {
-        if (is_string($permission)) {
-            $permission = config('guard.models.permission')::query()
-                ->where('name', $permission)
-                ->first();
-        }
+        $permission = $this->resolvePermission($permission, false);
 
         return $permission !== null && $this->permissions()
             ->whereKey($permission->getKey())
@@ -91,6 +80,7 @@ trait HasPermissions
      */
     public function getPermissions(): Collection
     {
+        // @phpstan-ignore-next-line - Defensive check for models without roles
         if (! method_exists($this, 'roles')) {
             return collect();
         }
@@ -107,12 +97,7 @@ trait HasPermissions
      */
     public function hasPermissionByName(string $permission): bool
     {
-        $permissions = $this->getAllPermissionNames();
-        if ($permissions->contains($permission)) {
-            return true;
-        }
-
-        return (bool) $this->matchesWildcardPermission($permission, $permissions);
+        return $this->hasPermission($permission);
     }
 
     /**
@@ -120,21 +105,31 @@ trait HasPermissions
      */
     public function hasPermission(Model|string $permission): bool
     {
-        if (is_string($permission)) {
-            return $this->hasPermissionByName($permission);
+        $name = is_string($permission)
+            ? $permission
+            : $permission->getAttribute('name');
+
+        if (! is_string($name)) {
+            return false;
         }
 
-        $name = $permission->getAttribute('name');
+        $permissions = $this->getAllPermissionNames();
 
-        return is_string($name) && $this->hasPermissionByName($name);
+        if ($permissions->contains($name)) {
+            return true;
+        }
+
+        return (bool) $this->matchesWildcardPermission($name, $permissions);
     }
 
     /**
      * Get the permission names.
+     *
+     * @return array<int, string>
      */
-    public function getPermissionNames(): Collection
+    public function getPermissionNames(): array
     {
-        return $this->permissions->pluck('name');
+        return $this->permissions->pluck('name')->toArray();
     }
 
     /**
@@ -157,9 +152,7 @@ trait HasPermissions
      */
     protected function getPermissionIdByName(string $permissionName): ?int
     {
-        $permissionModel = config('guard.models.permission');
-
-        return $permissionModel::query()
+        return config('guard.models.permission')::query()
             ->where('name', $permissionName)
             ->value('id');
     }
@@ -169,6 +162,7 @@ trait HasPermissions
      */
     protected function getAllPermissionNames(): Collection
     {
+        // @phpstan-ignore-next-line - Defensive check for models without roles
         if (! method_exists($this, 'roles')) {
             return collect();
         }
