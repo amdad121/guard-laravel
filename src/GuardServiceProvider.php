@@ -67,7 +67,7 @@ class GuardServiceProvider extends ServiceProvider
         $this->getPermissions()
             ->each(fn (Permission $permission) => Gate::define(
                 $permission->getName(),
-                fn (UserContract $user): bool => $user->hasPermissionByName($permission->getName())
+                fn (UserContract $user): bool => $user->hasPermission($permission->getName())
             ));
     }
 
@@ -132,37 +132,21 @@ class GuardServiceProvider extends ServiceProvider
      */
     protected function registerBladeDirectives(): void
     {
-        Blade::directive('role', function ($expression) {
-            return "<?php if(auth()->check() && auth()->user()->hasRole({$expression})): ?>";
-        });
+        Blade::directive('role', fn (string $expression): string => sprintf('<?php if(auth()->check() && auth()->user()->hasRole(%s)): ?>', $expression));
 
-        Blade::directive('endrole', function () {
-            return '<?php endif; ?>';
-        });
+        Blade::directive('endrole', fn (): string => '<?php endif; ?>');
 
-        Blade::directive('hasrole', function ($expression) {
-            return "<?php if(auth()->check() && auth()->user()->hasRole({$expression})): ?>";
-        });
+        Blade::directive('hasrole', fn (string $expression): string => sprintf('<?php if(auth()->check() && auth()->user()->hasRole(%s)): ?>', $expression));
 
-        Blade::directive('endhasrole', function () {
-            return '<?php endif; ?>';
-        });
+        Blade::directive('endhasrole', fn (): string => '<?php endif; ?>');
 
-        Blade::directive('hasanyrole', function ($expression) {
-            return "<?php if(auth()->check() && auth()->user()->hasAnyRole({$expression})): ?>";
-        });
+        Blade::directive('hasanyrole', fn (string $expression): string => sprintf('<?php if(auth()->check() && auth()->user()->hasAnyRole(%s)): ?>', $expression));
 
-        Blade::directive('endhasanyrole', function () {
-            return '<?php endif; ?>';
-        });
+        Blade::directive('endhasanyrole', fn (): string => '<?php endif; ?>');
 
-        Blade::directive('hasallroles', function ($expression) {
-            return "<?php if(auth()->check() && auth()->user()->hasAllRoles({$expression})): ?>";
-        });
+        Blade::directive('hasallroles', fn (string $expression): string => sprintf('<?php if(auth()->check() && auth()->user()->hasAllRoles(%s)): ?>', $expression));
 
-        Blade::directive('endhasallroles', function () {
-            return '<?php endif; ?>';
-        });
+        Blade::directive('endhasallroles', fn (): string => '<?php endif; ?>');
     }
 
     /**

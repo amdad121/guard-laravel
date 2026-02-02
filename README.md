@@ -368,7 +368,6 @@ $user->revokeAllPermissions();
 ```php
 // Check by name (checks roles + direct permissions)
 $user->hasPermission('users.create');
-$user->hasPermissionByName('users.edit');
 
 // Check by model
 $user->hasPermission($permissionModel);
@@ -378,7 +377,9 @@ $user->hasPermission('posts.*');
 
 // Get all permissions (roles + direct)
 $user->getPermissions();
-$user->getPermissionNames();
+
+// Get permission names array
+$user->getPermissionNames(); // ['users.create', 'users.edit', 'posts.delete']
 ```
 
 ### Checking Access
@@ -397,6 +398,9 @@ if ($user->hasAllRoles(['admin', 'editor'])) {
 if ($user->hasAnyRole(['admin', 'moderator'])) {
     // User has at least one role
 }
+
+// Get all role names
+$user->getRoleNames(); // ['administrator', 'editor']
 ```
 
 **Permission Checking:**
@@ -578,7 +582,6 @@ User::whereHas('roles.permissions', function ($query) {
 - `revokeAllPermissions()` - Revoke all permissions
 - `getPermissionNames()` - Get all permission names
 - `hasPermission($permission)` - Check permission (by name or model)
-- `hasPermissionByName($name)` - Check by name
 - `hasPermissionTo($permission)` - Check if has specific permission
 - `getPermissions()` - Get all permissions (from roles + direct)
 

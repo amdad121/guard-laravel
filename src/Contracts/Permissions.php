@@ -49,13 +49,6 @@ interface Permissions
     public function revokePermissionTo(Model|string $permission): int;
 
     /**
-     * Check if the entity has a specific permission by name.
-     *
-     * @return bool True if entity has the permission
-     */
-    public function hasPermissionByName(string $permission): bool;
-
-    /**
      * Check if the entity has a specific permission by model or name.
      *
      * @param  Model|string  $permission  Permission instance or name

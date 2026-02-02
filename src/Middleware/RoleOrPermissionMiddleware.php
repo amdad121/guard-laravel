@@ -22,7 +22,7 @@ class RoleOrPermissionMiddleware
 
         // Check if user has any of the items as a role OR any as a permission
         foreach ($flattenedItems as $item) {
-            if ($user->hasRole($item) || $user->hasPermissionByName($item)) {
+            if ($user->hasRole($item) || $user->hasPermission($item)) {
                 return $next($request);
             }
         }

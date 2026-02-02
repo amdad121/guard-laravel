@@ -23,7 +23,7 @@ class PermissionMiddleware
         // Check if user has ANY of the provided permissions
         $hasAnyPermission = false;
         foreach ($flattenedPermissions as $permission) {
-            if ($user->hasPermissionByName($permission)) {
+            if ($user->hasPermission($permission)) {
                 $hasAnyPermission = true;
                 break;
             }

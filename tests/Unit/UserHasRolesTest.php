@@ -185,7 +185,7 @@ it('defines gate for permissions', function (): void {
     Guard::clearCache();
 
     // Test that permission gate works via user method
-    $hasPermission = $this->user->hasPermissionByName('users.create');
+    $hasPermission = $this->user->hasPermission('users.create');
     expect($hasPermission)->toBeTrue();
 });
 

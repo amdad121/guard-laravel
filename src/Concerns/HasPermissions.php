@@ -93,15 +93,7 @@ trait HasPermissions
     }
 
     /**
-     * Check if model has a permission by name.
-     */
-    public function hasPermissionByName(string $permission): bool
-    {
-        return $this->hasPermission($permission);
-    }
-
-    /**
-     * Check if model has a permission by model.
+     * Check if model has a permission by model or name.
      */
     public function hasPermission(Model|string $permission): bool
     {
