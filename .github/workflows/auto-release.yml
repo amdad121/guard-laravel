@@ -1,4 +1,4 @@
-name: Auto Release on Tag
+name: Auto Release
 
 on:
   push:
@@ -13,43 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Generate Release Notes
-        id: release_notes
-        run: |
-          # Get the previous tag
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-
-          # Get commits between previous tag and current tag
-          if [ -n "$PREVIOUS_TAG" ]; then
-            COMMITS=$(git log --pretty=format:"- %s" $PREVIOUS_TAG..HEAD)
-          else
-            COMMITS=$(git log --pretty=format:"- %s")
-          fi
-
-          # Generate release notes
-          cat << EOF > release_notes.md
-          ## What's Changed
-
-          $COMMITS
-
-          **Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG:-v1.0.0}...${{ github.ref_name }}
-          EOF
-
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          cat release_notes.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
-          body: ${{ steps.release_notes.outputs.notes }}
+          name: Release ${{ github.ref_name }}
           generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
