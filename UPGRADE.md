@@ -1,41 +1,73 @@
 # Upgrade Guide
 
-Current Version: **v1.3.0**
+Current Version: **v1.4.0**
 
 ## Quick Upgrade
 
+### Upgrading to v1.4.0 (Latest)
+
 1. **Update the package**
 
-   ```bash
-   composer update amdadulhaq/guard-laravel
-   ```
+    ```bash
+    composer update amdadulhaq/guard-laravel
+    ```
+
+2. **Clear cache**
+
+    ```bash
+    php artisan cache:clear
+    php artisan config:clear
+    php artisan view:clear
+    ```
+
+3. **New Feature: Blade Directives** (Optional)
+
+    v1.4.0 introduces custom Blade directives for role checking. No code changes required - they're automatically available:
+
+    ```blade
+    @role('administrator')
+        <div>Admin content</div>
+    @endrole
+
+    @hasanyrole(['admin', 'editor'])
+        <div>Admin or Editor content</div>
+    @endhasanyrole
+    ```
+
+### Upgrading from v1.2.x to v1.3.0+
+
+1. **Update the package**
+
+    ```bash
+    composer update amdadulhaq/guard-laravel
+    ```
 
 2. **Update your User model**
 
-   ```bash
-   # Your User model now needs to use both traits:
-   # HasRoles and HasPermissions
-   ```
+    ```bash
+    # Your User model now needs to use both traits:
+    # HasRoles and HasPermissions
+    ```
 
 3. **Publish new migrations** (if using custom models)
 
-   ```bash
-   php artisan vendor:publish --tag="guard-migrations" --force
-   php artisan migrate
-   ```
+    ```bash
+    php artisan vendor:publish --tag="guard-migrations" --force
+    php artisan migrate
+    ```
 
 4. **Update config** (if using custom models or table names)
 
-   ```bash
-   php artisan vendor:publish --tag="guard-config" --force
-   ```
+    ```bash
+    php artisan vendor:publish --tag="guard-config" --force
+    ```
 
 5. **Clear cache**
-   ```bash
-   php artisan cache:clear
-   php artisan config:clear
-   php artisan route:clear
-   ```
+    ```bash
+    php artisan cache:clear
+    php artisan config:clear
+    php artisan route:clear
+    ```
 
 ## Breaking Changes
 
@@ -211,6 +243,11 @@ All existing functionality is preserved:
 - ✅ Permission Groups
 - ✅ Guarded Roles
 - ✅ Custom Middleware (with multiple support)
+- ✅ **Custom Blade Directives (NEW in v1.4.0)**
+    - `@role('admin')` - Check single role
+    - `@hasrole('admin')` - Alternative syntax
+    - `@hasanyrole(['admin', 'editor'])` - Check any role
+    - `@hasallroles(['admin', 'editor'])` - Check all roles
 - ✅ Cache Support
 - ✅ Query Scopes
 - ✅ Custom Exceptions

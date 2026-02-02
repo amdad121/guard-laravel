@@ -2,6 +2,32 @@
 
 All notable changes to `guard-laravel` will be documented in this file.
 
+## v1.4.0 - 2026-02-03
+
+### ✨ New Features
+
+- **Custom Blade Directives**:
+    - `@role('role-name')` - Check if user has a specific role
+    - `@hasrole('role-name')` - Alternative syntax for role checking
+    - `@hasanyrole(['admin', 'editor'])` - Check if user has any of the specified roles
+    - `@hasallroles(['admin', 'editor'])` - Check if user has all specified roles
+    - All directives support array or string parameters
+    - Automatic integration with authenticated user
+
+### 📚 Documentation
+
+- Updated README.md with comprehensive Blade directives documentation
+- Added examples for all custom directives
+- Clarified difference between custom directives and Laravel's built-in `@can` directives
+
+### 🛠️ Code Quality
+
+- Added `registerBladeDirectives()` method to ServiceProvider
+- Properly imported `Illuminate\Support\Facades\Blade`
+- All directives follow Laravel Blade conventions
+
+---
+
 ## v1.3.0 - 2026-02-02
 
 ### 🔨 Breaking Changes
@@ -15,34 +41,34 @@ All notable changes to `guard-laravel` will be documented in this file.
 ### ✨ New Features
 
 - **Improved Architecture**:
-  - Contracts and traits properly separated with no naming conflicts
-  - New `ChecksRoles` trait with shared role checking logic
-  - New `ResolvesModels` trait with shared model resolution logic
-  - Better type hints throughout codebase
-  - Improved code organization and maintainability
+    - Contracts and traits properly separated with no naming conflicts
+    - New `ChecksRoles` trait with shared role checking logic
+    - New `ResolvesModels` trait with shared model resolution logic
+    - Better type hints throughout codebase
+    - Improved code organization and maintainability
 
 - **Middleware Enhancements**:
-  - `RoleMiddleware`: Now supports multiple roles (comma-separated or variadic)
-  - `PermissionMiddleware`: Now supports multiple permissions
-  - `RoleOrPermissionMiddleware`: Now supports multiple roles or permissions
-  - All middlewares handle both formats: `role:admin,editor` or `role:admin`, `role:editor`
+    - `RoleMiddleware`: Now supports multiple roles (comma-separated or variadic)
+    - `PermissionMiddleware`: Now supports multiple permissions
+    - `RoleOrPermissionMiddleware`: Now supports multiple roles or permissions
+    - All middlewares handle both formats: `role:admin,editor` or `role:admin`, `role:editor`
 
 - **Code Quality**:
-  - 0 static analysis errors (Larastan)
-  - All files pass Laravel Pint linting
-  - Follows SOLID principles
-  - Proper separation of concerns
+    - 0 static analysis errors (Larastan)
+    - All files pass Laravel Pint linting
+    - Follows SOLID principles
+    - Proper separation of concerns
 
 - **Testing**:
-  - Added comprehensive middleware tests (10 new tests)
-  - Test User model now extends Authenticatable (proper Laravel usage)
-  - All 42 tests passing (77 assertions)
-  - 35 source files
+    - Added comprehensive middleware tests (10 new tests)
+    - Test User model now extends Authenticatable (proper Laravel usage)
+    - All 42 tests passing (77 assertions)
+    - 35 source files
 
 - **Documentation**:
-  - Updated README with new architecture
-  - Complete UPGRADE.md guide
-  - Clarified middleware usage with examples
+    - Updated README with new architecture
+    - Complete UPGRADE.md guide
+    - Clarified middleware usage with examples
 
 ### 📚 Documentation
 
@@ -100,26 +126,26 @@ Users upgrading to v1.3.0 need to:
 ### ✨ New Features
 
 - **HasPermissions Trait**:
-  - Added `revokeAllPermissions()` method to revoke all permissions
-  - Added `hasPermissionTo()` method to check if role has a permission
+    - Added `revokeAllPermissions()` method to revoke all permissions
+    - Added `hasPermissionTo()` method to check if role has a permission
 
 - **HasRoles Trait**:
-  - Added `syncRolesWithoutDetaching()` method to sync roles without detaching
-  - Added `revokeRole()` method to revoke a single role
-  - Added `revokeRoles()` method to revoke all roles
-  - Added `getRoleNames()` method to get all role names
-  - Improved `hasRole()` to handle Collection types
-  - Improved `hasAllRoles()` and `hasAnyRole()` to handle Collection types
-  - Simplified wildcard matching using `contains()` with closure
+    - Added `syncRolesWithoutDetaching()` method to sync roles without detaching
+    - Added `revokeRole()` method to revoke a single role
+    - Added `revokeRoles()` method to revoke all roles
+    - Added `getRoleNames()` method to get all role names
+    - Improved `hasRole()` to handle Collection types
+    - Improved `hasAllRoles()` and `hasAnyRole()` to handle Collection types
+    - Simplified wildcard matching using `contains()` with closure
 
 - **Models**:
-  - Removed outdated `static $table` pattern from `Permission` and `Role` models
-  - Now uses Laravel's built-in `getTable()` with config fallback
+    - Removed outdated `static $table` pattern from `Permission` and `Role` models
+    - Now uses Laravel's built-in `getTable()` with config fallback
 
 - **Service Provider**:
-  - Fixed `permissionsTableExists()` to use config table name
-  - Improved `registerModelObservers()` readability using `->each()`
-  - Improved `defineGatePermissions()` and `defineGateRoles()` readability
+    - Fixed `permissionsTableExists()` to use config table name
+    - Improved `registerModelObservers()` readability using `->each()`
+    - Improved `defineGatePermissions()` and `defineGateRoles()` readability
 
 ### 📚 Documentation
 

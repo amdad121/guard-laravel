@@ -1,99 +1,128 @@
-# Guard Role And Permission Package For Laravel
+# 🛡️ Guard - Modern Role & Permission Management for Laravel
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/amdadulhaq/guard-laravel.svg?style=flat-square)](https://packagist.org/packages/amdadulhaq/guard-laravel)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/amdad121/guard-laravel/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/amdad121/guard-laravel/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/amdad121/guard-laravel/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/amdad121/guard-laravel/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/amdadulhaq/guard-laravel.svg?style=flat-square)](https://packagist.org/packages/amdadulhaq/guard-laravel)
+[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat-square&logo=php)](https://php.net)
+[![Laravel Version](https://img.shields.io/badge/Laravel-10%2F11%2F12-FF2D20?style=flat-square&logo=laravel)](https://laravel.com)
 
-Guard is a modern Role and Permission management system for Laravel 10, 11, and 12 with PHP 8.2, 8.3, 8.4, and 8.5 support.
+> A powerful, flexible, and developer-friendly role and permission management system for Laravel applications.
 
-## Sponsor This Project
+## 🚀 Quick Start
 
-If you find Guard Laravel helpful, please consider **sponsoring** the project. Your support helps maintain and improve the package.
+Get up and running in 5 minutes:
 
-**[Become a GitHub Sponsor](https://github.com/sponsors/amdad121)** - Any amount is greatly appreciated!
+> **Upgrading from an older version?** Check the [Upgrade Guide](UPGRADE.md) for detailed migration instructions.
 
-## Table of Contents
+```bash
+# 1. Install via Composer
+composer require amdadulhaq/guard-laravel
 
-- [Features](#features)
-- [Requirements](#requirements)
+# 2. Publish and run migrations
+php artisan vendor:publish --tag="guard-migrations"
+php artisan migrate
+
+# 3. Setup your User model
+use AmdadulHaq\Guard\Contracts\User as UserContract;
+use AmdadulHaq\Guard\Concerns\HasRoles;
+use AmdadulHaq\Guard\Concerns\HasPermissions;
+
+class User extends Authenticatable implements UserContract {
+    use HasRoles;
+    use HasPermissions;
+}
+
+# 4. Create your first role and permission
+php artisan guard:create-role admin --label="Administrator"
+php artisan guard:create-permission users.create --label="Create Users"
+
+# 5. Protect your routes
+Route::middleware('role:admin')->get('/admin', [AdminController::class, 'index']);
+```
+
+## ✨ Features
+
+- 🎯 **Modern PHP & Laravel** - Built for PHP 8.2+ and Laravel 10/11/12
+- 🔐 **Flexible Permission System** - Users can have permissions via roles AND directly assigned
+- 🎭 **Wildcard Permissions** - Use `posts.*` to match all post-related permissions
+- ⚡ **Smart Caching** - Automatic cache invalidation for optimal performance
+- 🔑 **Laravel Gate Integration** - Native `@can`, `@canany`, `@cannot` support
+- 🛡️ **Middleware Protection** - `role`, `permission`, and `role_or_permission` middleware
+- 📦 **Type-Safe Enums** - IDE-friendly `PermissionType` and `CacheKey` enums
+- 🏰 **Guarded Roles** - Protect critical roles from accidental deletion
+- 📁 **Permission Groups** - Organize permissions by resource
+- 🎨 **Interactive Commands** - Laravel Prompts for creating roles/permissions
+- 🧹 **Clean Architecture** - Separated concerns with traits and contracts
+- 🧪 **Developer Tools** - Pint, Pest, Rector, and Larastan included
+
+## 📑 Table of Contents
+
 - [Installation](#installation)
-- [Upgrade Guide](#upgrade-guide)
+- [Upgrade Guide](UPGRADE.md)
 - [Configuration](#configuration)
 - [Usage](#usage)
-  - [Creating Roles](#creating-roles)
-  - [Creating Permissions](#creating-permissions)
-  - [Wildcard Permissions](#wildcard-permissions)
-  - [Assigning Permissions to Roles](#assigning-permissions-to-roles)
-  - [Assigning Roles to Users](#assigning-roles-to-users)
-  - [Direct User Permissions](#direct-user-permissions)
-  - [Checking Roles](#checking-roles)
-  - [Checking Permissions](#checking-permissions)
-  - [Advanced Permission Checking](#advanced-permission-checking)
-  - [Query Scopes](#query-scopes)
-  - [Middleware](#middleware)
-  - [Gate Integration](#gate-integration)
-  - [Blade Directives](#blade-directives)
-  - [Permission Helpers](#permission-helpers)
-  - [Role Helpers](#role-helpers)
-  - [Cache Management](#cache-management)
-  - [Custom Exceptions](#custom-exceptions)
-  - [Seeding Roles and Permissions](#seeding-roles-and-permissions)
-  - [API Protection](#api-protection)
+    - [User Setup](#user-setup)
+    - [Creating Roles](#creating-roles)
+    - [Creating Permissions](#creating-permissions)
+    - [Wildcard Permissions](#wildcard-permissions)
+    - [Role Management](#role-management)
+    - [Permission Management](#permission-management)
+    - [Direct User Permissions](#direct-user-permissions)
+    - [Checking Access](#checking-access)
+    - [Middleware](#middleware)
+    - [Gate Integration](#gate-integration)
+    - [Blade Directives](#blade-directives)
+    - [Artisan Commands](#artisan-commands)
+    - [Query Scopes](#query-scopes)
+- [Models Reference](#models-reference)
+- [Exceptions](#exceptions)
+- [Caching](#caching)
 - [Database Structure](#database-structure)
-- [Available Enums](#available-enums)
-- [Development Tools](#development-tools)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [Changelog](#changelog)
-- [Security Vulnerabilities](#security-vulnerabilities)
-- [Credits](#credits)
-- [License](#license)
+- [Enums](#enums)
+- [Development](#development)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
 
-## Features
+## 📦 Installation
 
-- **PHP 8.2, 8.3, 8.4, & 8.5 & Laravel 10, 11, & 12** - Modern PHP and Laravel features
-- **Role & Permission Management** - Create and manage roles with permissions
-- **Separate Concerns** - Traits and contracts are properly separated for better maintainability
-- **Wildcard Permissions** - Use wildcard patterns like `posts.*` for flexible permission checking
-- **Permission Groups** - Organize permissions into groups
-- **Guarded Roles** - Protect certain roles from deletion/modification
-- **Multiple Roles/Permissions** - Middleware now supports multiple roles/permissions at once
-- **Cache Support** - Intelligent caching with automatic invalidation
-- **Query Scopes** - Filter users by roles and permissions
-- **Custom Exceptions** - Better error messages
-- **Enums** - Type-safe constants for CacheKey and PermissionType
-- **Developer Tools** - Includes Pint, Pest, Rector, and Larastan
+### Requirements
 
-## Requirements
+- **PHP**: 8.2, 8.3, 8.4, or 8.5
+- **Laravel**: 10.x, 11.x, or 12.x
+- **Database**: MySQL 5.7+, PostgreSQL 9.6+, SQLite 3.8+, or SQL Server 2017+
 
-- **PHP**: 8.2, 8.3, 8.4, or 8.5 or higher
-- **Laravel**: 10, 11, or 12
-- **Database**: MySQL, PostgreSQL, SQLite, or SQL Server
-
-## Installation
-
-You can install the package via composer:
+### Step 1: Install via Composer
 
 ```bash
 composer require amdadulhaq/guard-laravel
 ```
 
-You can publish and run the migrations with:
+### Step 2: Publish Migrations
 
 ```bash
 php artisan vendor:publish --tag="guard-migrations"
 php artisan migrate
 ```
 
-Add the `HasRoles` trait and `User` interface to your User model:
+This creates 4 tables:
+
+- `roles` - Role definitions
+- `permissions` - Permission definitions
+- `permission_role` - Role-permission relationships
+- `role_user` - User-role relationships
+
+### Step 3: Configure User Model
 
 ```php
+<?php
+
 namespace App\Models;
 
 use AmdadulHaq\Guard\Contracts\User as UserContract;
 use AmdadulHaq\Guard\Concerns\HasRoles;
 use AmdadulHaq\Guard\Concerns\HasPermissions;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements UserContract
 {
@@ -102,21 +131,15 @@ class User extends Authenticatable implements UserContract
 }
 ```
 
----
-
-## Upgrade Guide
-
-If you're upgrading from an older version, please follow the [Upgrade Guide](UPGRADE.md) for detailed instructions.
-
-## Configuration
-
-Publish the config file:
+### Step 4: (Optional) Publish Config
 
 ```bash
 php artisan vendor:publish --tag="guard-config"
 ```
 
-Configuration options:
+## ⚙️ Configuration
+
+The `config/guard.php` file:
 
 ```php
 return [
@@ -145,514 +168,519 @@ return [
 ];
 ```
 
-## Usage
+## 🎯 Usage
+
+### User Setup
+
+Users implement the `UserContract` which combines `Roles` and `Permissions` contracts:
+
+```php
+use AmdadulHaq\Guard\Contracts\User as UserContract;
+use AmdadulHaq\Guard\Concerns\HasRoles;
+use AmdadulHaq\Guard\Concerns\HasPermissions;
+
+class User extends Authenticatable implements UserContract
+{
+    use HasRoles;      // Role management methods
+    use HasPermissions; // Permission management methods
+}
+```
 
 ### Creating Roles
 
 ```php
 use AmdadulHaq\Guard\Models\Role;
 
-$role = Role::create([
+// Create a role
+$adminRole = Role::create([
     'name' => 'administrator',
     'label' => 'Administrator',
     'description' => 'Full system access',
-    'is_guarded' => true,
+    'is_guarded' => true, // Protected from deletion
 ]);
+
+// Create via command
+// php artisan guard:create-role moderator --label="Moderator"
+```
+
+**Role Model Methods:**
+
+```php
+$role->getName();              // Get role name
+$role->isProtectedRole();      // Check if guarded
+$role->getPermissionNames();   // Get all permission names
+$role->users;                  // Get users with this role
+
+// Query scopes
+Role::guarded()->get();        // Only guarded roles
+Role::unguarded()->get();      // Only unguarded roles
 ```
 
 ### Creating Permissions
 
 ```php
 use AmdadulHaq\Guard\Models\Permission;
-use AmdadulHaq\Guard\Models\Role;
 
-$permission = Permission::create([
+// Simple permission
+Permission::create([
     'name' => 'users.create',
     'label' => 'Create Users',
-    'description' => 'Create new user accounts',
-    'group' => 'users',
+    'description' => 'Can create new users',
+    'group' => 'users', // For organization
 ]);
 
-$role->givePermissionTo($permission);
+// Wildcard permission (auto-sets is_wildcard = true)
+Permission::create([
+    'name' => 'posts.*',
+    'label' => 'Manage All Posts',
+    'group' => 'posts',
+]);
+
+// Create via command
+// php artisan guard:create-permission users.delete --label="Delete Users"
+```
+
+**Permission Model Methods:**
+
+```php
+$permission->getName();          // Get permission name
+$permission->getLabel();         // Get human-readable label
+$permission->getDescription();   // Get description
+$permission->isWildcard();       // Check if wildcard (e.g., posts.*)
+$permission->getGroup();         // Get group (e.g., 'users' from 'users.create')
+$permission->getType();          // Get PermissionType enum (e.g., PermissionType::CREATE)
+$permission->roles;              // Get roles with this permission
+
+// Query scopes
+Permission::wildcard()->get();           // Only wildcard permissions
+Permission::byGroup('users')->get();     // Permissions in users group
 ```
 
 ### Wildcard Permissions
 
-Create wildcard permissions for easier management:
+Wildcard permissions automatically match all sub-permissions:
 
 ```php
-Permission::create(['name' => 'posts.*', 'label' => 'All Post Permissions']);
+// Create wildcard permission
+Permission::create(['name' => 'posts.*']);
 
-// A user with this role can:
-$user->hasPermission('posts.create'); // true
-$user->hasPermission('posts.update'); // true
-$user->hasPermission('posts.delete'); // true
+// Assign to role
+$role->givePermissionTo('posts.*');
+
+// Now user can do all of these:
+$user->hasPermission('posts.create');  // true
+$user->hasPermission('posts.update');  // true
+$user->hasPermission('posts.delete');  // true
+$user->hasPermission('posts.publish'); // true
 ```
 
-### Assigning Permissions to Roles
+The `is_wildcard` boolean is automatically set when the name ends with `*`.
+
+### Role Management
+
+**Assigning Roles:**
 
 ```php
-use AmdadulHaq\Guard\Models\Permission;
-
-// Assign a single permission by model
-$role->givePermissionTo($permission);
-
-// Assign a single permission by name
-$role->givePermissionTo('users.create');
-
-// Sync multiple permissions (supports both IDs and names)
-$role->syncPermissions([$permission1->id, $permission2->id]);
-$role->syncPermissions(['users.create', 'users.edit', 'users.delete']);
-
-// Sync without detaching existing permissions
-$role->syncRolesWithoutDetaching(['editor', 'moderator']);
-
-// Revoke a specific permission
-$role->revokePermissionTo($permission);
-$role->revokePermissionTo('users.delete');
-
-// Revoke all permissions
-$role->revokeAllPermissions();
-
-// Check if role has a permission
-$role->hasPermissionTo('users.edit'); // true or false
-```
-
-### Assigning Roles to Users
-
-```php
-use App\Models\User;
-
-$user = User::first();
-
-// Assign by model
-$user->assignRole($role);
-
-// Assign by name
+// Single role
 $user->assignRole('administrator');
+$user->assignRole($roleModel);
 
-// Sync multiple roles
+// Multiple roles
+$user->assignRole(['administrator', 'editor']);
+
+// Sync (replaces all)
+$user->syncRoles(['administrator', 'editor']);
 $user->syncRoles([$role1->id, $role2->id]);
 
-// Sync without detaching existing roles
-$user->syncRolesWithoutDetaching(['editor', 'moderator']);
+// Sync without detaching existing
+$user->syncRolesWithoutDetaching(['moderator']);
 
-// Revoke a specific role
-$user->revokeRole($role);
+// Revoke
 $user->revokeRole('editor');
+$user->revokeRole($roleModel);
+$user->revokeRoles(); // Revoke all
+```
 
-// Revoke all roles
-$user->revokeRoles();
+**Checking Roles:**
 
-// Get all role names
+```php
+// Single role
+$user->hasRole('administrator');              // true/false
+
+// Multiple roles
+$user->hasAllRoles(['admin', 'editor']);     // Must have ALL
+$user->hasAnyRole(['admin', 'moderator']);   // Must have ANY
+
+// Get role names
 $user->getRoleNames(); // ['administrator', 'editor']
+```
 
-// Check if model has all specified roles
-$user->hasAllRoles(['admin', 'editor']); // true if user has both
+### Permission Management
 
-// Check if model has any of the specified roles
-$user->hasAnyRole(['admin', 'editor']); // true if user has at least one
+**Assigning to Roles:**
+
+```php
+// Single permission
+$role->givePermissionTo('users.create');
+$role->givePermissionTo($permissionModel);
+
+// Multiple permissions
+$role->givePermissionTo(['users.create', 'users.edit', 'users.delete']);
+
+// Sync (replaces all)
+$role->syncPermissions(['users.create', 'users.edit']);
+$role->syncPermissions([$perm1->id, $perm2->id]);
+
+// Revoke
+$role->revokePermissionTo('users.delete');
+$role->revokePermissionTo($permissionModel);
+$role->revokeAllPermissions();
+```
+
+**Checking Role Permissions:**
+
+```php
+$role->hasPermissionTo('users.edit');    // Check if role has permission
+$role->getPermissionNames();             // Get all permission names
 ```
 
 ### Direct User Permissions
 
-Assign permissions directly to users without going through roles:
+Users can have permissions **directly** in addition to permissions from roles:
 
 ```php
-use App\Models\User;
-
-$user = User::first();
-
-// Give permission directly to user
+// Give direct permission
 $user->givePermissionTo('posts.delete');
 
-// Give multiple permissions
+// Multiple permissions
 $user->givePermissionTo(['posts.create', 'posts.update']);
 
-// Sync user permissions (replaces all existing permissions)
-$user->syncPermissions(['posts.create', 'posts.update', 'posts.delete']);
+// Sync (replaces all direct permissions)
+$user->syncPermissions(['posts.create', 'posts.update']);
 
-// Revoke specific permission
+// Revoke
 $user->revokePermissionTo('posts.delete');
-
-// Revoke all permissions
 $user->revokeAllPermissions();
+```
 
-// Check if user has direct permission
-$user->hasPermission('posts.create'); // true
+**Checking User Permissions:**
+
+```php
+// Check by name (checks roles + direct permissions)
+$user->hasPermission('users.create');
+$user->hasPermissionByName('users.edit');
+
+// Check by model
+$user->hasPermission($permissionModel);
+
+// Wildcard matching
+$user->hasPermission('posts.*');
 
 // Get all permissions (roles + direct)
-$user->getPermissions(); // Collection of all permissions
+$user->getPermissions();
+$user->getPermissionNames();
 ```
 
-### Checking Roles
+### Checking Access
+
+**Role Checking:**
 
 ```php
-$user->hasRole('administrator'); // true or false
-$user->hasAllRoles(['admin', 'editor']); // true if user has all
-$user->hasAnyRole(['admin', 'editor']); // true if user has any
+if ($user->hasRole('administrator')) {
+    // User has administrator role
+}
+
+if ($user->hasAllRoles(['admin', 'editor'])) {
+    // User has both roles
+}
+
+if ($user->hasAnyRole(['admin', 'moderator'])) {
+    // User has at least one role
+}
 ```
 
-### Checking Permissions
+**Permission Checking:**
 
 ```php
-$user->hasPermission('users.create'); // Check by name
-$user->hasPermission($permissionModel); // Check by model
+if ($user->hasPermission('users.create')) {
+    // User can create users
+}
 
-// Get all permissions from user's roles
-$allPermissions = $user->getPermissions();
-```
-
-### Advanced Permission Checking
-
-Check multiple permissions at once with different logic:
-
-```php
-// Check if user has ALL specified permissions
-$user->hasAllPermissions(['users.create', 'users.edit']); // true only if user has both
-
-// Check if user has ANY of the specified permissions
-$user->hasAnyPermission(['users.delete', 'users.edit']); // true if user has at least one
-
-// Check using permission models
-$permission1 = Permission::where('name', 'users.create')->first();
-$permission2 = Permission::where('name', 'users.edit')->first();
-$user->hasAllPermissions([$permission1, $permission2]);
-
-// Check permissions via wildcard
-$user->hasPermission('posts.*'); // true if user has posts.create, posts.edit, etc.
-
-// Get all role names for a user
-$user->getRoleNames(); // ['administrator', 'editor']
-
-// Get permission names grouped by role
-$permissionsByRole = $user->getPermissionsByRole();
-// [
-//     'administrator' => ['users.create', 'users.delete'],
-//     'editor' => ['posts.create', 'posts.edit']
-// ]
-```
-
-### Query Scopes
-
-Filter users by roles and permissions:
-
-```php
-// Get users with specific role
-User::withRoles('administrator')->get();
-
-// Get users with specific permission
-User::withPermissions('users.create')->get();
+if ($user->hasPermission('posts.*')) {
+    // User has wildcard permission for posts
+}
 ```
 
 ### Middleware
 
-Protect routes using built-in middleware. All middlewares support multiple roles/permissions:
+All middleware supports multiple values (requires ANY):
 
 ```php
-// Single permission
-Route::middleware('permission:users.create')->group(function () {
-    Route::post('/users', [UserController::class, 'store']);
-});
+// Role middleware
+Route::middleware('role:administrator')->get('/admin', [AdminController::class, 'index']);
 
-// Multiple permissions (requires any of them)
-Route::middleware('permission:users.create,users.edit')->group(function () {
-    Route::put('/users/{id}', [UserController::class, 'update']);
-});
-
-// Single role
-Route::middleware('role:administrator')->group(function () {
-    Route::delete('/users/{id}', [UserController::class, 'destroy']);
-});
-
-// Multiple roles (requires any of them)
+// Multiple roles (requires ANY)
 Route::middleware('role:admin,editor')->group(function () {
-    Route::get('/admin', [AdminController::class, 'dashboard']);
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 });
 
-// Role OR permission
-Route::middleware('role_or_permission:admin,users.create')->group(function () {
-    Route::get('/users', [UserController::class, 'index']);
-});
+// Permission middleware
+Route::middleware('permission:users.create')->post('/users', [UserController::class, 'store']);
+
+// Multiple permissions (requires ANY)
+Route::middleware('permission:users.create,users.edit')->put('/users/{id}', [UserController::class, 'update']);
+
+// Role OR permission middleware
+Route::middleware('role_or_permission:admin,users.create')->get('/users', [UserController::class, 'index']);
 
 // Multiple role_or_permission
-Route::middleware('role_or_permission:admin,editor,users.manage')->group(function () {
+Route::middleware('role_or_permission:admin,editor,posts.manage')->group(function () {
     Route::post('/manage', [Controller::class, 'handle']);
 });
 ```
 
 ### Gate Integration
 
-Use Laravel's Gate and authorization:
+The package automatically registers Gates for all permissions and roles:
 
 ```php
-// Using Gate facade
-Gate::authorize('users.create');
-Gate::authorize('administrator');
-
-// Using controller helper
-$this->authorize('users.create');
-
-// Check via Gate facade
-if (Gate::allows('users.create')) {
+// In controllers
+public function store(Request $request)
+{
+    $this->authorize('users.create');
     // User can create users
 }
 
-if (Gate::denies('users.delete')) {
-    abort(403);
+// Using Gate facade
+use Illuminate\Support\Facades\Gate;
+
+if (Gate::allows('users.create')) {
+    // Allowed
 }
 
-// Using Gate::forUser for a specific user
-if (Gate::forUser($user)->allows('posts.edit')) {
-    // This specific user can edit posts
+if (Gate::denies('users.delete')) {
+    abort(403, 'Permission denied');
 }
+
+// Check for specific user
+if (Gate::forUser($otherUser)->allows('posts.edit')) {
+    // That user can edit posts
+}
+
+// Authorize roles
+$this->authorize('administrator');
 ```
 
 ### Blade Directives
 
-Use Blade directives for conditional rendering in your views:
+Guard provides custom Blade directives for role checking, in addition to Laravel's built-in `@can` directives:
 
-```php
+**Custom Role Directives:**
+
+```blade
+@role('administrator')
+    <div class="admin-panel">
+        <h1>Admin Dashboard</h1>
+    </div>
+@endrole
+
+@hasrole('editor')
+    <p>Editor content here</p>
+@endhasrole
+
+@hasanyrole(['administrator', 'moderator'])
+    <p>Content for admins or moderators</p>
+@endhasanyrole
+
+@hasallroles(['administrator', 'editor'])
+    <p>Only for users with BOTH admin AND editor roles</p>
+@endhasallroles
+```
+
+**Built-in Laravel Directives (via Gate integration):**
+
+```blade
 @can('users.create')
-    <button>Create User</button>
-@elsecan('users.edit')
-    <button>Edit Users</button>
-@else
-    <p>No permission</p>
+    <a href="/users/create">Create User</a>
 @endcan
 
 @canany(['users.create', 'users.edit'])
-    <p>You can create or edit users</p>
+    <p>You can manage users</p>
 @endcanany
 
 @cannot('users.delete')
     <p>You cannot delete users</p>
 @endcannot
-
-@role('administrator')
-    <p>Admin content - only visible to administrators</p>
-@endrole
-
-@hasrole('administrator')
-    <p>Alternative syntax for role check</p>
-@endhasrole
-
-@hasanyrole(['administrator', 'editor'])
-    <p>Visible to admins and editors</p>
-@endhasanyrole
-
-@hasallroles(['administrator', 'moderator'])
-    <p>Visible only to users with both roles</p>
-@endhasallroles
 ```
 
-### Permission Helpers
+### Artisan Commands
 
-Get permission information:
+**Create a Role:**
+
+```bash
+php artisan guard:create-role admin --label="Administrator"
+
+# With optional user assignment
+php artisan guard:create-role moderator --label="Moderator" --user=1
+```
+
+**Create a Permission:**
+
+```bash
+php artisan guard:create-permission users.create --label="Create Users"
+
+# With optional role assignment
+php artisan guard:create-permission posts.delete --label="Delete Posts" --role=1
+```
+
+Both commands use interactive Laravel Prompts if arguments are not provided.
+
+### Query Scopes
 
 ```php
-$permission->isWildcard(); // Check if permission is wildcard
-$permission->getGroup(); // Get permission group (e.g., 'users')
-$permission->getType(); // Get permission type enum
+// Users with specific role
+User::whereHas('roles', function ($query) {
+    $query->where('name', 'administrator');
+})->get();
+
+// Users with specific permission
+User::whereHas('roles.permissions', function ($query) {
+    $query->where('name', 'users.create');
+})->get();
+
+// Note: The traits have protected scopeWithRoles and scopeWithPermissions
+// that can be used internally or extended in your User model
 ```
 
-### Role Helpers
+## 📚 Models Reference
 
-```php
-$role->isProtectedRole(); // Check if role is protected
-$role->getPermissionNames(); // Get all permission names for role
+### User Model (via Traits)
 
-// Query scopes
-Role::guarded()->get(); // Get all guarded roles
-Role::unguarded()->get(); // Get all unguarded roles
-```
+**HasRoles trait provides:**
 
-### Cache Management
+- `roles()` - BelongsToMany relationship
+- `assignRole($role)` - Assign single or multiple roles
+- `syncRoles(array $roles, bool $detach = true)` - Sync roles
+- `syncRolesWithoutDetaching(array $roles)` - Sync without detaching
+- `revokeRole($role)` - Revoke specific role
+- `revokeRoles()` - Revoke all roles
+- `getRoleNames()` - Get all role names
+- `hasRole($role)` - Check single role
+- `hasAllRoles(...$roles)` - Check all roles
+- `hasAnyRole(...$roles)` - Check any role
 
-The package automatically caches permissions and roles. Clear cache manually:
+**HasPermissions trait provides:**
 
-```php
-use AmdadulHaq\Guard\Facades\Guard;
+- `permissions()` - BelongsToMany relationship
+- `givePermissionTo($permission)` - Give single or multiple permissions
+- `syncPermissions(array $permissions)` - Sync permissions
+- `revokePermissionTo($permission)` - Revoke specific permission
+- `revokeAllPermissions()` - Revoke all permissions
+- `getPermissionNames()` - Get all permission names
+- `hasPermission($permission)` - Check permission (by name or model)
+- `hasPermissionByName($name)` - Check by name
+- `hasPermissionTo($permission)` - Check if has specific permission
+- `getPermissions()` - Get all permissions (from roles + direct)
 
-Guard::clearCache();
-```
+### Role Model
 
-Cache is automatically invalidated when roles or permissions are created, updated, or deleted.
+**Properties:**
 
-### Custom Exceptions
+- `name` (string, unique)
+- `label` (string, nullable)
+- `description` (text, nullable)
+- `is_guarded` (boolean)
+
+**Methods:**
+
+- `getName()` - Get role name
+- `isProtectedRole()` - Check if guarded
+- `getPermissionNames()` - Get assigned permission names
+- `permissions()` - BelongsToMany to permissions
+- `users()` - BelongsToMany to users
+
+**Scopes:**
+
+- `guarded()` - Only guarded roles
+- `unguarded()` - Only unguarded roles
+
+### Permission Model
+
+**Properties:**
+
+- `name` (string, unique)
+- `label` (string, nullable)
+- `description` (text, nullable)
+- `group` (string, nullable, indexed)
+- `is_wildcard` (boolean, auto-set)
+
+**Methods:**
+
+- `getName()` - Get permission name
+- `getLabel()` - Get human-readable label
+- `getDescription()` - Get description
+- `isWildcard()` - Check if wildcard pattern
+- `getGroup()` - Get resource group (e.g., 'users')
+- `getType()` - Get PermissionType enum
+- `roles()` - BelongsToMany to roles
+- `giveRoleTo($role)` - Give role to permission
+- `syncRoles(array $roles)` - Sync roles
+- `revokeRole($role)` - Revoke role
+- `assignRole($role)` - Alias for giveRoleTo
+
+**Scopes:**
+
+- `wildcard()` - Only wildcard permissions
+- `byGroup($group)` - Filter by group
+
+## 🚨 Exceptions
 
 ```php
 use AmdadulHaq\Guard\Exceptions\PermissionDeniedException;
 use AmdadulHaq\Guard\Exceptions\RoleDoesNotExistException;
+use AmdadulHaq\Guard\Exceptions\PermissionDoesNotExistException;
 
-if (!$user->hasPermission('users.delete')) {
-    throw PermissionDeniedException::create('users.delete');
-}
+// Permission denied
+throw PermissionDeniedException::create('users.delete');
+throw PermissionDeniedException::roleNotAssigned('administrator');
 
-$role = Role::where('name', 'non-existent')->first();
-if (!$role) {
-    throw RoleDoesNotExistException::named('admin');
-}
+// Role not found
+throw RoleDoesNotExistException::named('admin');
+throw RoleDoesNotExistException::withId(123);
+
+// Permission not found
+throw PermissionDoesNotExistException::named('users.delete');
+throw PermissionDoesNotExistException::withId(456);
 ```
 
-### Permission Type Enum
+## 💾 Caching
+
+The package uses intelligent caching:
 
 ```php
-use AmdadulHaq\Guard\Enums\PermissionType;
+use AmdadulHaq\Guard\Facades\Guard;
 
-PermissionType::CREATE->label(); // "Create"
-PermissionType::DELETE->label(); // "Delete"
-PermissionType::VIEW_ANY->label(); // "View any"
-PermissionType::UPDATE->label(); // "Update"
-PermissionType::RESTORE->label(); // "Restore"
-PermissionType::FORCE_DELETE->label(); // "Force delete"
+// Clear cache manually
+Guard::clearCache();
 ```
 
-### Seeding Roles and Permissions
+**Cache is automatically cleared when:**
 
-Create seeders to set up default roles and permissions:
+- Roles or permissions are created/updated/deleted
+- Role-permission relationships change
+- User-role relationships change
+
+**Configuration:**
 
 ```php
-<?php
-
-namespace Database\Seeders;
-
-use AmdadulHaq\Guard\Models\Permission;
-use AmdadulHaq\Guard\Models\Role;
-use Illuminate\Database\Seeder;
-
-class RoleAndPermissionSeeder extends Seeder
-{
-    public function run(): void
-    {
-        // Create roles
-        $admin = Role::create(['name' => 'admin', 'label' => 'Administrator', 'is_guarded' => true]);
-        $editor = Role::create(['name' => 'editor', 'label' => 'Editor']);
-        $user = Role::create(['name' => 'user', 'label' => 'User']);
-
-        // Create permissions
-        $permissions = [
-            ['name' => 'users.view_any', 'label' => 'View All Users', 'group' => 'users'],
-            ['name' => 'users.create', 'label' => 'Create User', 'group' => 'users'],
-            ['name' => 'users.edit', 'label' => 'Edit User', 'group' => 'users'],
-            ['name' => 'users.delete', 'label' => 'Delete User', 'group' => 'users'],
-            ['name' => 'posts.view_any', 'label' => 'View All Posts', 'group' => 'posts'],
-            ['name' => 'posts.create', 'label' => 'Create Post', 'group' => 'posts'],
-            ['name' => 'posts.edit', 'label' => 'Edit Post', 'group' => 'posts'],
-            ['name' => 'posts.delete', 'label' => 'Delete Post', 'group' => 'posts'],
-            ['name' => 'posts.*', 'label' => 'Manage All Posts', 'group' => 'posts', 'is_wildcard' => true],
-        ];
-
-        foreach ($permissions as $permission) {
-            Permission::create($permission);
-        }
-
-        // Assign permissions to roles
-        $admin->syncPermissions(Permission::all()->pluck('id')->toArray());
-        $editor->syncPermissions(['posts.view_any', 'posts.create', 'posts.edit', 'posts.*']);
-        $user->syncPermissions(['posts.view_any']);
-    }
-}
+'cache' => [
+    'enabled' => true,
+    'roles_duration' => 3600,        // 1 hour
+    'permissions_duration' => 3600,  // 1 hour
+],
 ```
 
-Run the seeder:
-
-```bash
-php artisan db:seed --class=RoleAndPermissionSeeder
-```
-
-### API Protection
-
-Protect API routes with role and permission middleware:
-
-```php
-// routes/api.php
-use Illuminate\Support\Facades\Route;
-
-// Public routes
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
-
-// Protected routes - require authentication
-Route::middleware('auth:sanctum')->group(function () {
-    // User routes
-    Route::middleware('permission:users.view_any')->get('/users', [UserController::class, 'index']);
-    Route::middleware('permission:users.create')->post('/users', [UserController::class, 'store']);
-    Route::middleware('permission:users.edit')->put('/users/{id}', [UserController::class, 'update']);
-    Route::middleware('permission:users.delete')->delete('/users/{id}', [UserController::class, 'destroy']);
-
-    // Post routes
-    Route::middleware('permission:posts.view_any')->get('/posts', [PostController::class, 'index']);
-    Route::middleware('permission:posts.create')->post('/posts', [PostController::class, 'store']);
-    Route::middleware('permission:posts.edit')->put('/posts/{id}', [PostController::class, 'update']);
-    Route::middleware('permission:posts.delete')->delete('/posts/{id}', [PostController::class, 'destroy']);
-
-    // Admin only routes
-    Route::middleware('role:admin')->prefix('/admin')->group(function () {
-        Route::get('/dashboard', [AdminController::class, 'dashboard']);
-        Route::get('/settings', [AdminController::class, 'settings']);
-        Route::post('/settings', [AdminController::class, 'updateSettings']);
-    });
-
-    // Multiple permissions required
-    Route::middleware(['permission:posts.edit', 'permission:posts.publish'])
-        ->post('/posts/{id}/publish', [PostController::class, 'publish']);
-});
-
-// Using role_or_permission middleware
-Route::middleware(['auth:sanctum', 'role_or_permission:admin,posts.manage'])
-    ->delete('/posts/{id}', [PostController::class, 'destroy']);
-```
-
-Example API Controller with authorization:
-
-```php
-<?php
-
-namespace App\Http\Controllers;
-
-use App\Models\Post;
-use App\Http\Requests\PostRequest;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-
-class PostController extends Controller
-{
-    public function index(): JsonResponse
-    {
-        $this->authorize('posts.view_any');
-
-        $posts = Post::with('author')->latest()->paginate(20);
-        return response()->json($posts);
-    }
-
-    public function store(PostRequest $request): JsonResponse
-    {
-        $this->authorize('posts.create');
-
-        $post = auth()->user()->posts()->create($request->validated());
-        return response()->json($post, 201);
-    }
-
-    public function update(PostRequest $request, Post $post): JsonResponse
-    {
-        $this->authorize('posts.edit', $post);
-
-        $post->update($request->validated());
-        return response()->json($post);
-    }
-
-    public function destroy(Post $post): JsonResponse
-    {
-        $this->authorize('posts.delete', $post);
-
-        $post->delete();
-        return response()->json(null, 204);
-    }
-}
-```
-
-## Database Structure
+## 🗄️ Database Structure
 
 ### Roles Table
 
@@ -675,138 +703,194 @@ Schema::create('permissions', function (Blueprint $table) {
     $table->string('name')->unique();
     $table->string('label')->nullable();
     $table->text('description')->nullable();
-    $table->string('group')->nullable();
+    $table->string('group')->nullable()->index();
     $table->boolean('is_wildcard')->default(false);
     $table->timestamps();
 });
 ```
 
-### Permission-Role Pivot Table
+### Permission-Role Pivot
 
 ```php
 Schema::create('permission_role', function (Blueprint $table) {
-    $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
-    $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
+    $table->foreignId('permission_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('role_id')->constrained()->cascadeOnDelete();
     $table->primary(['permission_id', 'role_id']);
 });
 ```
 
-### Role-User Pivot Table
+### Role-User Pivot
 
 ```php
 Schema::create('role_user', function (Blueprint $table) {
-    $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
-    $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+    $table->foreignId('role_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
     $table->primary(['role_id', 'user_id']);
 });
 ```
 
-## Available Enums
-
-### CacheKey
-
-```php
-enum CacheKey: string
-{
-    case PERMISSIONS = 'guard_permissions';
-    case ROLES = 'guard_roles';
-}
-```
+## 🔢 Enums
 
 ### PermissionType
 
 ```php
-enum PermissionType: string
-{
-    case READ = 'read';
-    case WRITE = 'write';
-    case DELETE = 'delete';
-    case MANAGE = 'manage';
-    case VIEW_ANY = 'view_any';
-    case VIEW = 'view';
-    case CREATE = 'create';
-    case UPDATE = 'update';
-    case RESTORE = 'restore';
-    case FORCE_DELETE = 'force_delete';
+use AmdadulHaq\Guard\Enums\PermissionType;
 
-    public function label(): string
-    {
-        return str_replace('_', ' ', ucfirst($this->value));
-    }
-}
+PermissionType::CREATE->label();       // "Create"
+PermissionType::READ->label();         // "Read"
+PermissionType::WRITE->label();        // "Write"
+PermissionType::UPDATE->label();       // "Update"
+PermissionType::DELETE->label();       // "Delete"
+PermissionType::VIEW_ANY->label();     // "View any"
+PermissionType::VIEW->label();         // "View"
+PermissionType::RESTORE->label();      // "Restore"
+PermissionType::FORCE_DELETE->label(); // "Force delete"
+PermissionType::MANAGE->label();       // "Manage"
 ```
 
-## Development Tools
+### CacheKey
 
-This package includes comprehensive developer tools:
+```php
+use AmdadulHaq\Guard\Enums\CacheKey;
 
-### Code Refactoring
+CacheKey::PERMISSIONS->value; // 'guard_permissions'
+CacheKey::ROLES->value;       // 'guard_roles'
+```
+
+## 🛠️ Development
+
+### Code Quality Tools
 
 ```bash
-# Run Rector
+# Rector (code refactoring)
 composer refactor
-
-# Check Rector dry-run
 composer refactor:check
-```
 
-### Code Quality
-
-```bash
-# Format code with Laravel Pint
+# Laravel Pint (code style)
 composer lint
-
-# Check code style
 composer lint:check
-```
 
-### Testing
-
-```bash
-# Run Pest tests
+# Pest (testing)
 composer test
-
-# Run tests with coverage
 composer test-coverage
-```
 
-### Static Analysis
-
-```bash
-# Run Larastan
+# Larastan (static analysis)
 composer analyse
 ```
 
-## Testing
-
-Run the test suite:
+### Running Tests
 
 ```bash
+# Run all tests
 composer test
-```
 
-For code coverage:
-
-```bash
+# With coverage
 composer test-coverage
 ```
 
-## Contributing
+## 🔧 Troubleshooting
 
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+### Common Issues
 
-## Changelog
+**Issue: `Class 'AmdadulHaq\Guard\Concerns\HasRoles' not found`**
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+Solution:
 
-## Security Vulnerabilities
+```bash
+composer dump-autoload
+```
 
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
+**Issue: `Target class [role] does not exist.`**
 
-## Credits
+Solution:
+
+```bash
+php artisan config:clear
+```
+
+**Issue: Permissions not being recognized**
+
+Solution:
+
+```bash
+php artisan cache:clear
+# Or
+php artisan tinker --execute="\AmdadulHaq\Guard\Facades\Guard::clearCache()"
+```
+
+### Performance Tips
+
+1. **Keep caching enabled** in production
+2. **Use wildcard permissions** to reduce permission count
+3. **Filter at database level** instead of loading all users:
+
+    ```php
+    // ✅ Good
+    User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->get();
+
+    // ❌ Less efficient
+    User::all()->filter(fn ($u) => $u->hasRole('admin'));
+    ```
+
+4. **Eager load** when needed:
+    ```php
+    User::with(['roles', 'roles.permissions'])->get();
+    ```
+
+## ❓ FAQ
+
+**Q: Can I use this with Laravel Sanctum?**
+
+A: Yes! Guard works seamlessly with Sanctum and any auth system.
+
+**Q: Can users have permissions without roles?**
+
+A: Yes! Users can have both role-based AND direct permissions using `givePermissionTo()`, `syncPermissions()`, etc.
+
+**Q: How do wildcard permissions work?**
+
+A: Create a permission like `posts.*` and it automatically matches `posts.create`, `posts.edit`, etc.
+
+**Q: Can I customize table names?**
+
+A: Yes, publish the config and modify the `tables` section.
+
+**Q: Does it work with multiple guards?**
+
+A: Yes, it integrates with Laravel's authorization system.
+
+**Q: Is there a UI for managing roles?**
+
+A: Guard is backend-only. For a UI, consider Filament Shield or build your own.
+
+**Q: How do I create custom Blade directives?**
+
+A: Use Laravel's built-in `@can`, `@canany`, `@cannot` directives which work automatically via Gate integration.
+
+**Q: Can permissions be assigned to permissions?**
+
+A: No, permissions are assigned to roles, and users get permissions via roles or direct assignment.
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
+
+## 📝 Changelog
+
+See [CHANGELOG](CHANGELOG.md) for recent changes.
+
+## 🔒 Security
+
+Please review [our security policy](../../security/policy) for reporting vulnerabilities.
+
+## 👏 Credits
 
 ![Contributors](https://contrib.rocks/image?repo=amdad121/guard-laravel)
 
-## License
+## 📄 License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The MIT License (MIT). See [License File](LICENSE.md) for details.
+
+---
+
+<p align="center">Made with ❤️ for the Laravel community</p>

@@ -18,6 +18,7 @@ use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -49,6 +50,7 @@ class GuardServiceProvider extends ServiceProvider
         $this->publishMigrations();
         $this->registerCommands();
         $this->registerMiddleware();
+        $this->registerBladeDirectives();
 
         if ($this->permissionsTableExists()) {
             $this->registerModelObservers();
@@ -123,6 +125,44 @@ class GuardServiceProvider extends ServiceProvider
         $router->aliasMiddleware('role', RoleMiddleware::class);
         $router->aliasMiddleware('permission', PermissionMiddleware::class);
         $router->aliasMiddleware('role_or_permission', RoleOrPermissionMiddleware::class);
+    }
+
+    /**
+     * Register Blade directives for role and permission checking.
+     */
+    protected function registerBladeDirectives(): void
+    {
+        Blade::directive('role', function ($expression) {
+            return "<?php if(auth()->check() && auth()->user()->hasRole({$expression})): ?>";
+        });
+
+        Blade::directive('endrole', function () {
+            return '<?php endif; ?>';
+        });
+
+        Blade::directive('hasrole', function ($expression) {
+            return "<?php if(auth()->check() && auth()->user()->hasRole({$expression})): ?>";
+        });
+
+        Blade::directive('endhasrole', function () {
+            return '<?php endif; ?>';
+        });
+
+        Blade::directive('hasanyrole', function ($expression) {
+            return "<?php if(auth()->check() && auth()->user()->hasAnyRole({$expression})): ?>";
+        });
+
+        Blade::directive('endhasanyrole', function () {
+            return '<?php endif; ?>';
+        });
+
+        Blade::directive('hasallroles', function ($expression) {
+            return "<?php if(auth()->check() && auth()->user()->hasAllRoles({$expression})): ?>";
+        });
+
+        Blade::directive('endhasallroles', function () {
+            return '<?php endif; ?>';
+        });
     }
 
     /**
