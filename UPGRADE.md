@@ -1,10 +1,10 @@
 # Upgrade Guide
 
-Current Version: **v1.4.0**
+Current Version: **v1.2.1**
 
 ## Quick Upgrade
 
-### Upgrading to v1.4.0 (Latest)
+### Upgrading to v1.2.1 (Latest)
 
 1. **Update the package**
 
@@ -22,7 +22,7 @@ Current Version: **v1.4.0**
 
 3. **New Feature: Blade Directives** (Optional)
 
-    v1.4.0 introduces custom Blade directives for role checking. No code changes required - they're automatically available:
+    v1.2.1 introduces custom Blade directives for role checking. No code changes required - they're automatically available:
 
     ```blade
     @role('administrator')
@@ -214,14 +214,14 @@ composer test
 
 All methods now accept both model instances and string names:
 
-| Method                 | Old Signature                           | New Signature                   |
-| ---------------------- | --------------------------------------- | ------------------------------- | ---------------------- |
-| `assignRole()`         | `assignRole(Model $role)`               | `assignRole(Model               | string $role)`         |
-| `revokeRole()`         | `revokeRole(Model $role)`               | `revokeRole(Model               | string $role)`         |
-| `givePermissionTo()`   | `givePermissionTo(Model $permission)`   | `givePermissionTo(Model         | string $permission)`   |
-| `revokePermissionTo()` | `revokePermissionTo(Model $permission)` | `revokePermissionTo(Model       | string $permission)`   |
-| `syncRoles()`          | `syncRoles(array $roleIds)`             | `syncRoles(array<int, int       | string> $roles)`       |
-| `syncPermissions()`    | `syncPermissions(array $permissionIds)` | `syncPermissions(array<int, int | string> $permissions)` |
+| Method                 | Old Signature                           | New Signature                                               |
+| ---------------------- | --------------------------------------- | ----------------------------------------------------------- |
+| `assignRole()`         | `assignRole(Model $role)`               | `assignRole(Model\|string $role)`                           |
+| `revokeRole()`         | `revokeRole(Model $role)`               | `revokeRole(Model\|string $role)`                           |
+| `givePermissionTo()`   | `givePermissionTo(Model $permission)`   | `givePermissionTo(Model\|string $permission)`               |
+| `revokePermissionTo()` | `revokePermissionTo(Model $permission)` | `revokePermissionTo(Model\|string $permission)`             |
+| `syncRoles()`          | `syncRoles(array $roleIds)`             | `syncRoles(array $roles)` supports IDs or names             |
+| `syncPermissions()`    | `syncPermissions(array $permissionIds)` | `syncPermissions(array $permissions)` supports IDs or names |
 
 ### Returns Type Updates
 
@@ -243,7 +243,7 @@ All existing functionality is preserved:
 - ✅ Permission Groups
 - ✅ Guarded Roles
 - ✅ Custom Middleware (with multiple support)
-- ✅ **Custom Blade Directives (NEW in v1.4.0)**
+- ✅ **Custom Blade Directives (NEW in v1.2.1)**
     - `@role('admin')` - Check single role
     - `@hasrole('admin')` - Alternative syntax
     - `@hasanyrole(['admin', 'editor'])` - Check any role

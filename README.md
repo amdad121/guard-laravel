@@ -15,29 +15,48 @@ Get up and running in 5 minutes:
 
 > **Upgrading from an older version?** Check the [Upgrade Guide](UPGRADE.md) for detailed migration instructions.
 
-```bash
-# 1. Install via Composer
-composer require amdadulhaq/guard-laravel
+### 1. Install via Composer
 
-# 2. Publish and run migrations
+```bash
+composer require amdadulhaq/guard-laravel
+```
+
+### 2. Publish and run migrations
+
+```bash
 php artisan vendor:publish --tag="guard-migrations"
 php artisan migrate
+```
 
-# 3. Setup your User model
+### 3. Setup your User model
+
+```php
+<?php
+
+namespace App\Models;
+
 use AmdadulHaq\Guard\Contracts\User as UserContract;
 use AmdadulHaq\Guard\Concerns\HasRoles;
 use AmdadulHaq\Guard\Concerns\HasPermissions;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable implements UserContract {
+class User extends Authenticatable implements UserContract
+{
     use HasRoles;
     use HasPermissions;
 }
+```
 
-# 4. Create your first role and permission
+### 4. Create your first role and permission
+
+```bash
 php artisan guard:create-role admin --label="Administrator"
 php artisan guard:create-permission users.create --label="Create Users"
+```
 
-# 5. Protect your routes
+### 5. Protect your routes
+
+```php
 Route::middleware('role:admin')->get('/admin', [AdminController::class, 'index']);
 ```
 

@@ -2,7 +2,7 @@
 
 All notable changes to `guard-laravel` will be documented in this file.
 
-## v1.4.0 - 2026-02-03
+## v1.2.1 - 2026-02-03
 
 ### ✨ New Features
 
