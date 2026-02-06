@@ -17,4 +17,9 @@ class PermissionDeniedException extends Exception
     {
         return new self(sprintf('User does not have role: %s', $role));
     }
+
+    public static function roleOrPermissionNotAssigned(string $items): self
+    {
+        return new self(sprintf('User does not have role or permission: %s', $items));
+    }
 }

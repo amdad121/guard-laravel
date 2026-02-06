@@ -8,6 +8,7 @@ use AmdadulHaq\Guard\Concerns\ChecksRoles;
 use AmdadulHaq\Guard\Concerns\ResolvesModels;
 use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
 use AmdadulHaq\Guard\Enums\PermissionType;
+use AmdadulHaq\Guard\Facades\Guard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -131,7 +132,7 @@ class Permission extends Model implements RolesContract
     }
 
     /**
-     * Permissions relation - permissions don't have permissions, return empty relation.
+     * Permissions relation.
      */
     public function permissions(): BelongsToMany
     {
@@ -164,7 +165,8 @@ class Permission extends Model implements RolesContract
     public function giveRoleTo(Model|string $role): Model
     {
         $role = $this->resolveRole($role);
-        $this->roles()->attach($role);
+        $this->roles()->syncWithoutDetaching([$role->getKey()]);
+        $this->clearGuardCache();
 
         return $this;
     }
@@ -179,7 +181,10 @@ class Permission extends Model implements RolesContract
     {
         $roleIds = $this->getRoleIds($roles);
 
-        return $this->roles()->sync($roleIds);
+        $synced = $this->roles()->sync($roleIds);
+        $this->clearGuardCache();
+
+        return $synced;
     }
 
     /**
@@ -189,7 +194,10 @@ class Permission extends Model implements RolesContract
     {
         $role = $this->resolveRole($role, false);
 
-        return $this->roles()->detach($role);
+        $detached = $this->roles()->detach($role);
+        $this->clearGuardCache();
+
+        return $detached;
     }
 
     /**
@@ -223,5 +231,17 @@ class Permission extends Model implements RolesContract
     public function assignRole(Model|string $role): Model
     {
         return $this->giveRoleTo($role);
+    }
+
+    /**
+     * Clear cached permissions/roles if caching is enabled.
+     */
+    protected function clearGuardCache(): void
+    {
+        if (! config('guard.cache.enabled', true)) {
+            return;
+        }
+
+        Guard::clearCache();
     }
 }

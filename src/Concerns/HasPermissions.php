@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Concerns;
 
+use AmdadulHaq\Guard\Facades\Guard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -34,7 +35,10 @@ trait HasPermissions
     {
         $permission = $this->resolvePermission($permission);
 
-        return $this->permissions()->save($permission);
+        $this->permissions()->syncWithoutDetaching([$permission->getKey()]);
+        $this->clearGuardCache();
+
+        return $this;
     }
 
     /**
@@ -42,7 +46,10 @@ trait HasPermissions
      */
     public function syncPermissions(array $permissions): array
     {
-        return $this->permissions()->sync($this->getPermissionIds($permissions));
+        $synced = $this->permissions()->sync($this->getPermissionIds($permissions));
+        $this->clearGuardCache();
+
+        return $synced;
     }
 
     /**
@@ -52,7 +59,10 @@ trait HasPermissions
     {
         $permission = $this->resolvePermission($permission);
 
-        return $this->permissions()->detach($permission);
+        $detached = $this->permissions()->detach($permission);
+        $this->clearGuardCache();
+
+        return $detached;
     }
 
     /**
@@ -60,7 +70,10 @@ trait HasPermissions
      */
     public function revokeAllPermissions(): int
     {
-        return $this->permissions()->detach();
+        $detached = $this->permissions()->detach();
+        $this->clearGuardCache();
+
+        return $detached;
     }
 
     /**
@@ -109,6 +122,10 @@ trait HasPermissions
 
         if ($permissions->contains($name)) {
             return true;
+        }
+
+        if (! config('guard.wildcard.enabled', true)) {
+            return false;
         }
 
         return (bool) $this->matchesWildcardPermission($name, $permissions);
@@ -196,5 +213,17 @@ trait HasPermissions
     protected function scopeWithPermissions(Builder $query, string|array $permissions): Builder
     {
         return $query->whereHas('roles.permissions', fn (Builder $q) => $q->whereIn('name', (array) $permissions));
+    }
+
+    /**
+     * Clear cached permissions/roles if caching is enabled.
+     */
+    protected function clearGuardCache(): void
+    {
+        if (! config('guard.cache.enabled', true)) {
+            return;
+        }
+
+        Guard::clearCache();
     }
 }

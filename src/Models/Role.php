@@ -44,7 +44,7 @@ class Role extends Model implements PermissionsContract
     }
 
     /**
-     * Permissions relation - roles don't have permissions, return empty relation.
+     * Permissions relation.
      */
     public function permissions(): BelongsToMany
     {
@@ -52,7 +52,7 @@ class Role extends Model implements PermissionsContract
     }
 
     /**
-     * Users relation - roles don't have users, return empty relation.
+     * Users relation.
      */
     public function users(): BelongsToMany
     {
@@ -76,7 +76,7 @@ class Role extends Model implements PermissionsContract
     }
 
     /**
-     * Roles relation - roles don't have roles, return empty collection.
+     * Roles relation.
      */
     public function roles(): BelongsToMany
     {

@@ -78,3 +78,21 @@ it('clears cache on permission deletion', function (): void {
 
     expect(Cache::has($cacheKey))->toBeFalse();
 });
+
+it('clears cache when permissions are assigned to roles', function (): void {
+    config()->set('guard.cache.enabled', true);
+
+    $role = Role::query()->create(['name' => 'test-role']);
+    $permission = Permission::query()->create(['name' => 'test.permission']);
+
+    Cache::put(CacheKey::PERMISSIONS->value, Permission::with('roles')->get(), 3600);
+    Cache::put(CacheKey::ROLES->value, Role::all(), 3600);
+
+    expect(Cache::has(CacheKey::PERMISSIONS->value))->toBeTrue();
+    expect(Cache::has(CacheKey::ROLES->value))->toBeTrue();
+
+    $role->givePermissionTo($permission);
+
+    expect(Cache::has(CacheKey::PERMISSIONS->value))->toBeFalse();
+    expect(Cache::has(CacheKey::ROLES->value))->toBeFalse();
+});

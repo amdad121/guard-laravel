@@ -169,6 +169,17 @@ it('can check wildcard permissions', function (): void {
         ->toBeTrue();
 });
 
+it('does not match wildcard permissions when disabled', function (): void {
+    config()->set('guard.wildcard.enabled', false);
+
+    $wildcardPermission = Permission::query()->create(['name' => 'users.*']);
+    $this->role->givePermissionTo($wildcardPermission);
+    $this->user->assignRole($this->role);
+
+    expect($this->user->hasPermission('users.create'))
+        ->toBeFalse();
+});
+
 it('throws exception when user lacks permission', function (): void {
     $this->role->givePermissionTo($this->permission);
     $this->user->assignRole($this->role);

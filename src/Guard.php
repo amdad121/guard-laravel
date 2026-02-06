@@ -57,7 +57,7 @@ class Guard
     public function getPivotTableName(array $array): string
     {
         return collect($array)
-            ->map(fn (string $value): string => self::getSingularName(self::getTableName($value)))
+            ->map(fn (string $value): string => $this->getSingularName($this->getTableName($value)))
             ->sort()
             ->values()
             ->implode('_');

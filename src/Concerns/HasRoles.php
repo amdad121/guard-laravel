@@ -28,7 +28,7 @@ trait HasRoles
     public function assignRole(Model|string $role): self
     {
         $role = $this->resolveRole($role);
-        $this->roles()->attach($role);
+        $this->roles()->syncWithoutDetaching([$role->getKey()]);
 
         return $this;
     }

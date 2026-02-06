@@ -27,6 +27,6 @@ class RoleOrPermissionMiddleware
             }
         }
 
-        throw PermissionDeniedException::roleNotAssigned(implode(', ', $flattenedItems));
+        throw PermissionDeniedException::roleOrPermissionNotAssigned(implode(', ', $flattenedItems));
     }
 }

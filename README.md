@@ -63,7 +63,7 @@ Route::middleware('role:admin')->get('/admin', [AdminController::class, 'index']
 ## ✨ Features
 
 - 🎯 **Modern PHP & Laravel** - Built for PHP 8.2+ and Laravel 10/11/12
-- 🔐 **Flexible Permission System** - Users can have permissions via roles AND directly assigned
+- 🔐 **Flexible Permission System** - Users can have permissions via roles
 - 🎭 **Wildcard Permissions** - Use `posts.*` to match all post-related permissions
 - ⚡ **Smart Caching** - Automatic cache invalidation for optimal performance
 - 🔑 **Laravel Gate Integration** - Native `@can`, `@canany`, `@cannot` support
@@ -88,7 +88,6 @@ Route::middleware('role:admin')->get('/admin', [AdminController::class, 'index']
     - [Wildcard Permissions](#wildcard-permissions)
     - [Role Management](#role-management)
     - [Permission Management](#permission-management)
-    - [Direct User Permissions](#direct-user-permissions)
     - [Checking Access](#checking-access)
     - [Middleware](#middleware)
     - [Gate Integration](#gate-integration)
@@ -131,6 +130,7 @@ This creates 4 tables:
 - `permissions` - Permission definitions
 - `permission_role` - Role-permission relationships
 - `role_user` - User-role relationships
+Pivot table names are derived from model table names; the defaults shown above are used unless you customize model tables.
 
 ### Step 3: Configure User Model
 
@@ -364,29 +364,10 @@ $role->hasPermissionTo('users.edit');    // Check if role has permission
 $role->getPermissionNames();             // Get all permission names
 ```
 
-### Direct User Permissions
-
-Users can have permissions **directly** in addition to permissions from roles:
-
-```php
-// Give direct permission
-$user->givePermissionTo('posts.delete');
-
-// Multiple permissions
-$user->givePermissionTo(['posts.create', 'posts.update']);
-
-// Sync (replaces all direct permissions)
-$user->syncPermissions(['posts.create', 'posts.update']);
-
-// Revoke
-$user->revokePermissionTo('posts.delete');
-$user->revokeAllPermissions();
-```
-
 **Checking User Permissions:**
 
 ```php
-// Check by name (checks roles + direct permissions)
+// Check by name
 $user->hasPermission('users.create');
 
 // Check by model
@@ -395,11 +376,11 @@ $user->hasPermission($permissionModel);
 // Wildcard matching
 $user->hasPermission('posts.*');
 
-// Get all permissions (roles + direct)
+// Get all permissions (from roles)
 $user->getPermissions();
 
 // Get permission names array
-$user->getPermissionNames(); // ['users.create', 'users.edit', 'posts.delete']
+$user->getPermissionNames(); // ['users.create', 'users.edit']
 ```
 
 ### Checking Access
@@ -572,8 +553,8 @@ User::whereHas('roles.permissions', function ($query) {
     $query->where('name', 'users.create');
 })->get();
 
-// Note: The traits have protected scopeWithRoles and scopeWithPermissions
-// that can be used internally or extended in your User model
+// Note: The traits include scopeWithRoles and scopeWithPermissions
+// which are available for direct use in your User model
 ```
 
 ## 📚 Models Reference
@@ -603,7 +584,7 @@ User::whereHas('roles.permissions', function ($query) {
 - `getPermissionNames()` - Get all permission names
 - `hasPermission($permission)` - Check permission (by name or model)
 - `hasPermissionTo($permission)` - Check if has specific permission
-- `getPermissions()` - Get all permissions (from roles + direct)
+- `getPermissions()` - Get all permissions (from roles)
 
 ### Role Model
 
@@ -691,7 +672,6 @@ Guard::clearCache();
 
 - Roles or permissions are created/updated/deleted
 - Role-permission relationships change
-- User-role relationships change
 
 **Configuration:**
 
@@ -868,7 +848,7 @@ A: Yes! Guard works seamlessly with Sanctum and any auth system.
 
 **Q: Can users have permissions without roles?**
 
-A: Yes! Users can have both role-based AND direct permissions using `givePermissionTo()`, `syncPermissions()`, etc.
+A: No, users receive permissions via roles.
 
 **Q: How do wildcard permissions work?**
 
@@ -892,7 +872,7 @@ A: Use Laravel's built-in `@can`, `@canany`, `@cannot` directives which work aut
 
 **Q: Can permissions be assigned to permissions?**
 
-A: No, permissions are assigned to roles, and users get permissions via roles or direct assignment.
+A: No, permissions are assigned to roles.
 
 ## 🤝 Contributing
 

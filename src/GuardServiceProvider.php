@@ -122,9 +122,11 @@ class GuardServiceProvider extends ServiceProvider
     {
         $router = $this->app->make(Router::class);
 
-        $router->aliasMiddleware('role', RoleMiddleware::class);
-        $router->aliasMiddleware('permission', PermissionMiddleware::class);
-        $router->aliasMiddleware('role_or_permission', RoleOrPermissionMiddleware::class);
+        $middleware = config('guard.middleware', []);
+
+        $router->aliasMiddleware($middleware['role'] ?? 'role', RoleMiddleware::class);
+        $router->aliasMiddleware($middleware['permission'] ?? 'permission', PermissionMiddleware::class);
+        $router->aliasMiddleware($middleware['role_or_permission'] ?? 'role_or_permission', RoleOrPermissionMiddleware::class);
     }
 
     /**
