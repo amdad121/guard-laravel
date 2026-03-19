@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use AmdadulHaq\Guard\Models\Permission;
+use AmdadulHaq\Guard\Models\Role;
+use App\Models\User;
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -27,9 +31,9 @@ return [
     */
 
     'models' => [
-        'user' => \App\Models\User::class,
-        'role' => \AmdadulHaq\Guard\Models\Role::class,
-        'permission' => \AmdadulHaq\Guard\Models\Permission::class,
+        'user' => User::class,
+        'role' => Role::class,
+        'permission' => Permission::class,
     ],
 
     /*
