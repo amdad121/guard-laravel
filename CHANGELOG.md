@@ -2,6 +2,25 @@
 
 All notable changes to `guard-laravel` will be documented in this file.
 
+## v1.3.0 - 2026-03-19
+
+### ✨ New Features
+
+- **Laravel 13 Support**: Added support for Laravel 13
+- Updated `illuminate/contracts`, `illuminate/database`, and `illuminate/support` to `^13.0`
+- Updated `orchestra/testbench` to `^11.0` for testing
+
+---
+
+## v1.2.2 - 2026-02-06
+
+### 📚 Documentation
+
+- Updated README to remove direct user permissions section
+- Cleaned up documentation for better clarity
+
+---
+
 ## v1.2.1 - 2026-02-03
 
 ### ✨ New Features
@@ -28,7 +47,7 @@ All notable changes to `guard-laravel` will be documented in this file.
 
 ---
 
-## v1.3.0 - 2026-02-02
+## v1.2.0 - 2026-02-02
 
 ### 🔨 Breaking Changes
 
@@ -86,7 +105,7 @@ All notable changes to `guard-laravel` will be documented in this file.
 
 ### 🔄 Migration Requirements
 
-Users upgrading to v1.3.0 need to:
+Users upgrading to v1.2.0 need to:
 
 1. Update imports from `Guard\HasRoles` to `Guard\Concerns\HasRoles`
 2. Update imports from `Guard\HasPermissions` to `Guard\Concerns\HasPermissions`
@@ -114,6 +133,8 @@ Users upgrading to v1.3.0 need to:
 - **Naming Conventions**: Traits in Concerns, contracts as interfaces
 - **Flexibility**: Middleware now supports multiple parameters
 - **Maintainability**: Better code organization
+
+---
 
 ## v1.1.0 - 2026-01-30
 
