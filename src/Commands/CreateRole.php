@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Commands;
 
-use AmdadulHaq\Guard\Contracts\User as UserContract;
-use AmdadulHaq\Guard\Models\Role;
+use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 use function Laravel\Prompts\text;
@@ -16,15 +16,11 @@ class CreateRole extends Command implements PromptsForMissingInput
 {
     /**
      * The name and signature of the console command.
-     *
-     * @var string
      */
-    protected $signature = 'guard:create-role {name : The name of the role} {label? : The name of the label} {user? : ID of the user}';
+    protected $signature = 'guard:create-role {name : The name of the role} {label? : The name of the label} {user? : ID, email, or name of the user}';
 
     /**
      * The console command description.
-     *
-     * @var string
      */
     protected $description = 'Create a Role';
 
@@ -51,37 +47,35 @@ class CreateRole extends Command implements PromptsForMissingInput
             );
         }
 
-        $userId = $this->argument('user');
+        $userIdentifier = $this->argument('user');
 
-        if (! $userId) {
-            $userId = text(
-                label: 'ID of the user',
+        if (! $userIdentifier) {
+            $userIdentifier = text(
+                label: 'ID, email, or name of the user',
                 required: false
             );
         }
 
-        $role = Role::query()->firstOrCreate(['name' => $name], ['name' => $name, 'label' => $label]);
+        $roleModel = $this->resolveRoleModel();
+        $role = $roleModel::query()->firstOrCreate(['name' => $name], ['name' => $name, 'label' => $label]);
 
         $message = '';
 
-        if ($userId) {
-            /** @var Model|UserContract $userModel */
-            $userModel = resolve(config('guard.models.user'));
-            /** @var Model|null $user */
-            $user = $userModel->find($userId);
+        if ($userIdentifier) {
+            $user = $this->findUser($userIdentifier);
 
-            if ($user) {
-                if ($user instanceof UserContract) {
+            if ($user instanceof Model) {
+                if ($user instanceof RolesContract) {
                     $user->assignRole($role);
                     $message = 'Assign to the user ID of #'.$user->getKey().'.';
                 } else {
-                    $this->error('User model must implement UserContract.');
+                    $this->error('User model must implement Roles contract.');
                     $this->newLine();
 
                     return self::INVALID;
                 }
             } else {
-                $this->error('User is not exists. Try to using with correct user ID.');
+                $this->error('User does not exist. Use a valid user ID, email, or name.');
                 $this->newLine();
 
                 return self::INVALID;
@@ -89,15 +83,41 @@ class CreateRole extends Command implements PromptsForMissingInput
         }
 
         if ($role->wasRecentlyCreated) {
-            $this->info('Role created successfully. ID of the role is #'.$role->id.'. '.$message);
+            $this->info('Role created successfully. ID of the role is #'.$role->getKey().'. '.$message);
             $this->newLine();
 
             return self::SUCCESS;
         }
 
-        $this->info('Role already exist. ID of the role is #'.$role->id.'. '.$message);
+        $this->info('Role already exist. ID of the role is #'.$role->getKey().'. '.$message);
         $this->newLine();
 
         return self::SUCCESS;
+    }
+
+    protected function resolveUserModel(): Model
+    {
+        return resolve(config('guard.models.user'));
+    }
+
+    protected function resolveRoleModel(): Model
+    {
+        return resolve(config('guard.models.role'));
+    }
+
+    protected function findUser(string $identifier): ?Model
+    {
+        $userModel = $this->resolveUserModel();
+
+        return $userModel::query()
+            ->where(function (Builder $query) use ($identifier, $userModel): void {
+                if (is_numeric($identifier)) {
+                    $query->where($userModel->getKeyName(), (int) $identifier);
+                }
+
+                $query->orWhere('email', $identifier)
+                    ->orWhere('name', $identifier);
+            })
+            ->first();
     }
 }

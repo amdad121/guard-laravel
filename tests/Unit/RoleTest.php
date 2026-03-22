@@ -39,6 +39,30 @@ it('can assign permission to role', function (): void {
         ->first()->name->toBe('users.create');
 });
 
+it('can assign permission to role by name', function (): void {
+    $this->role->givePermissionTo('users.create');
+
+    expect($this->role->fresh()->permissions)
+        ->toHaveCount(1)
+        ->first()->name->toBe('users.create');
+});
+
+it('can assign multiple permissions to role in one call', function (): void {
+    $permission2 = Permission::query()->create([
+        'name' => 'users.update',
+        'label' => 'Update Users',
+    ]);
+    $permission3 = Permission::query()->create([
+        'name' => 'users.delete',
+        'label' => 'Delete Users',
+    ]);
+
+    $this->role->givePermissionTo('users.create', [$permission2, $permission3->id]);
+
+    expect($this->role->fresh()->permissions->pluck('name')->sort()->values()->all())
+        ->toEqual(['users.create', 'users.delete', 'users.update']);
+});
+
 it('can sync permissions to role', function (): void {
     $permission2 = Permission::query()->create([
         'name' => 'users.update',
@@ -112,4 +136,40 @@ it('can check if user belongs to role via users relation', function (): void {
     $hasUser = $this->role->users()->where('id', $user->id)->exists();
 
     expect($hasUser)->toBeTrue();
+});
+
+it('can query guarded and unguarded roles via scopes', function (): void {
+    Role::query()->create([
+        'name' => 'system',
+        'is_guarded' => true,
+    ]);
+
+    $guarded = Role::query()->guarded()->pluck('name')->all();
+    $unguarded = Role::query()->unguarded()->pluck('name')->all();
+
+    expect($guarded)->toContain('system')
+        ->and($unguarded)->toContain('admin')
+        ->and($unguarded)->not->toContain('system');
+});
+
+it('can query users with roles via scope', function (): void {
+    $admin = User::query()->create([
+        'name' => 'Admin User',
+        'email' => 'admin@example.com',
+        'password' => 'password',
+    ]);
+
+    $editor = User::query()->create([
+        'name' => 'Editor User',
+        'email' => 'editor@example.com',
+        'password' => 'password',
+    ]);
+
+    $editorRole = Role::query()->create(['name' => 'editor']);
+
+    $admin->assignRole($this->role);
+    $editor->assignRole($editorRole);
+
+    expect(User::query()->withRoles('admin')->pluck('email')->all())
+        ->toEqual(['admin@example.com']);
 });

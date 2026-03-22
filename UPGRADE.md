@@ -70,10 +70,10 @@ Current Version: **v1.4.0**
 
 2. **Update your User model**
 
-    ```bash
-    # Your User model now needs to use both traits:
-    # HasRoles and HasPermissions
-    ```
+    Choose the setup that matches your app:
+
+    - Roles only: implement `AmdadulHaq\Guard\Contracts\Roles` and use `HasRoles`
+    - Roles + permissions: implement `AmdadulHaq\Guard\Contracts\User` and use `HasRoles` + `HasPermissions`
 
 3. **Publish new migrations** (if using custom models)
 
@@ -100,7 +100,8 @@ Current Version: **v1.4.0**
 ### Contracts Renamed
 
 - `HasRoles` contract → now called **`Roles`**
-- `HasPermissions` contract → now called **`Permissions`**
+- `User` remains the user-side contract for permission checks
+- `Permissions` is the direct permission-management contract for role-like models
 - Old import: `use AmdadulHaq\Guard\HasRoles;`
 - New import: `use AmdadulHaq\Guard\Concerns\HasRoles;`
 
@@ -144,22 +145,13 @@ Route::middleware('role', 'admin', 'editor')->group(function () {
 
 Same applies to `permission` and `role_or_permission` middlewares.
 
-### Shared Concerns Added
+### Role and Permission Input Methods
 
-Two new shared traits created for DRY principle:
+Methods that accept roles or permissions now support model instances, names, and where documented IDs:
 
-1. **ChecksRoles** - Shared role checking logic (`hasRole`, `hasAllRoles`, `hasAnyRole`)
-2. **ResolvesModels** - Shared model resolution from strings
-
-These are automatically used by all implementing classes.
-
-### Model Resolution Methods
-
-All methods that accept role/permission by name now have better type hints:
-
-- `assignRole()` - Now accepts `Model|string`
+- `assignRole()` - Now accepts `Model|string|int|array` and variadic input
 - `revokeRole()` - Now accepts `Model|string`
-- `givePermissionTo()` - Now accepts `Model|string`
+- `givePermissionTo()` - Now accepts `Model|string|int|array` and variadic input
 - `revokePermissionTo()` - Now accepts `Model|string`
 - `syncRoles()` - Now accepts `array<int, int|string>`
 - `syncPermissions()` - Now accepts `array<int, int|string>`
@@ -168,24 +160,24 @@ All methods that accept role/permission by name now have better type hints:
 
 ### Step 1: Update User Model Imports
 
-**Old code:**
+**Roles only:**
 
 ```php
 use AmdadulHaq\Guard\HasRoles;
-use AmdadulHaq\Guard\HasPermissions;
+use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
 
-class User extends Authenticatable implements UserContract
+class User extends Authenticatable implements RolesContract
 {
     use HasRoles;
-    use HasPermissions;
 }
 ```
 
-**New code:**
+**Roles + Permissions:**
 
 ```php
 use AmdadulHaq\Guard\Concerns\HasRoles;
 use AmdadulHaq\Guard\Concerns\HasPermissions;
+use AmdadulHaq\Guard\Contracts\User as UserContract;
 
 class User extends Authenticatable implements UserContract
 {
@@ -238,13 +230,13 @@ composer test
 
 ### All Methods That Accept Models
 
-All methods now accept both model instances and string names:
+All methods now accept model instances, names, and where documented IDs:
 
 | Method                 | Old Signature                           | New Signature                                               |
 | ---------------------- | --------------------------------------- | ----------------------------------------------------------- |
-| `assignRole()`         | `assignRole(Model $role)`               | `assignRole(Model\|string $role)`                           |
+| `assignRole()`         | `assignRole(Model $role)`               | `assignRole(Model\|string\|int\|array ...$roles)`           |
 | `revokeRole()`         | `revokeRole(Model $role)`               | `revokeRole(Model\|string $role)`                           |
-| `givePermissionTo()`   | `givePermissionTo(Model $permission)`   | `givePermissionTo(Model\|string $permission)`               |
+| `givePermissionTo()`   | `givePermissionTo(Model $permission)`   | `givePermissionTo(Model\|string\|int\|array ...$permissions)` |
 | `revokePermissionTo()` | `revokePermissionTo(Model $permission)` | `revokePermissionTo(Model\|string $permission)`             |
 | `syncRoles()`          | `syncRoles(array $roleIds)`             | `syncRoles(array $roles)` supports IDs or names             |
 | `syncPermissions()`    | `syncPermissions(array $permissionIds)` | `syncPermissions(array $permissions)` supports IDs or names |
@@ -256,7 +248,7 @@ Some methods now return self for fluent chaining:
 | Method               | Old Return | New Return |
 | -------------------- | ---------- | ---------- |
 | `assignRole()`       | `Model`    | `self`     |
-| `givePermissionTo()` | `Model`    | `self`     |
+| `givePermissionTo()` | `Model`    | `Model`    |
 | `syncRoles()`        | `array`    | `array`    |
 | `syncPermissions()`  | `array`    | `array`    |
 
@@ -279,7 +271,7 @@ All existing functionality is preserved:
 - ✅ Custom Exceptions
 - ✅ Enums
 - ✅ Developer Tools
-- ✅ 42 tests passing
+- ✅ Roles-only usage or roles plus permissions
 
 ## That's It!
 

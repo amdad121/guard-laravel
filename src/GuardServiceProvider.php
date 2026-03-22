@@ -6,7 +6,6 @@ namespace AmdadulHaq\Guard;
 
 use AmdadulHaq\Guard\Commands\CreatePermission;
 use AmdadulHaq\Guard\Commands\CreateRole;
-use AmdadulHaq\Guard\Contracts\Permissions as PermissionsContract;
 use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
 use AmdadulHaq\Guard\Contracts\User as UserContract;
 use AmdadulHaq\Guard\Enums\CacheKey;
@@ -37,7 +36,6 @@ class GuardServiceProvider extends ServiceProvider
             'guard'
         );
 
-        $this->app->bind(PermissionsContract::class, fn () => resolve(config('guard.models.permission')));
         $this->app->bind(RolesContract::class, fn () => resolve(config('guard.models.role')));
     }
 
@@ -79,7 +77,7 @@ class GuardServiceProvider extends ServiceProvider
         $this->getRoles()
             ->each(fn (Role $role) => Gate::define(
                 $role->getName(),
-                fn (UserContract $user): bool => $user->hasRole($role->getName())
+                fn (RolesContract $user): bool => $user->hasRole($role->getName())
             ));
     }
 
@@ -156,7 +154,10 @@ class GuardServiceProvider extends ServiceProvider
      */
     protected function registerModelObservers(): void
     {
-        collect([Role::class, Permission::class])
+        collect([
+            config('guard.models.role', Role::class),
+            config('guard.models.permission', Permission::class),
+        ])
             ->each(function (string $model): void {
                 $model::saved(fn () => Guard::clearCache());
                 $model::deleted(fn () => Guard::clearCache());
@@ -177,33 +178,53 @@ class GuardServiceProvider extends ServiceProvider
 
     /**
      * Get all permissions from cache or database.
-     *
-     * @return Collection<int, Permission>
      */
     protected function getPermissions(): Collection
     {
         if (! config('guard.cache.enabled', true)) {
-            return Permission::with('roles')->get();
+            return $this->permissionModel()::with('roles')->get();
         }
 
         $cacheDuration = config('guard.cache.permissions_duration', 3600);
 
-        return Cache::remember(CacheKey::PERMISSIONS->value, $cacheDuration, fn () => Permission::with('roles')->get());
+        return Cache::remember(
+            CacheKey::PERMISSIONS->value,
+            $cacheDuration,
+            fn () => $this->permissionModel()::with('roles')->get()
+        );
     }
 
     /**
      * Get all roles from cache or database.
-     *
-     * @return Collection<int, Role>
      */
     protected function getRoles(): Collection
     {
         if (! config('guard.cache.enabled', true)) {
-            return Role::all();
+            return $this->roleModel()::all();
         }
 
         $cacheDuration = config('guard.cache.roles_duration', 3600);
 
-        return Cache::remember(CacheKey::ROLES->value, $cacheDuration, fn () => Role::all());
+        return Cache::remember(
+            CacheKey::ROLES->value,
+            $cacheDuration,
+            fn () => $this->roleModel()::all()
+        );
+    }
+
+    /**
+     * Get the configured permission model class.
+     */
+    protected function permissionModel(): string
+    {
+        return config('guard.models.permission', Permission::class);
+    }
+
+    /**
+     * Get the configured role model class.
+     */
+    protected function roleModel(): string
+    {
+        return config('guard.models.role', Role::class);
     }
 }

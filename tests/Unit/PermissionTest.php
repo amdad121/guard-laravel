@@ -56,3 +56,28 @@ it('can get permission type', function (): void {
 it('throws exception when permission does not exist', function (): void {
     Permission::query()->where('name', 'non-existent')->firstOrFail();
 })->throws(ModelNotFoundException::class);
+
+it('can query wildcard permissions via scope', function (): void {
+    Permission::query()->create([
+        'name' => 'posts.*',
+        'label' => 'All Posts Permissions',
+    ]);
+
+    expect(Permission::query()->wildcard()->pluck('name')->all())
+        ->toEqual(['posts.*']);
+});
+
+it('can query permissions by group via scope', function (): void {
+    Permission::query()->create([
+        'name' => 'users.delete',
+        'label' => 'Delete Users',
+    ]);
+
+    Permission::query()->create([
+        'name' => 'posts.create',
+        'label' => 'Create Posts',
+    ]);
+
+    expect(Permission::query()->byGroup('users')->pluck('name')->sort()->values()->all())
+        ->toEqual(['users.create', 'users.delete']);
+});

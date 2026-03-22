@@ -12,9 +12,6 @@ class Guard
 {
     /**
      * Get singular name of a string.
-     *
-     * @param  string  $string  The input string
-     * @return string The singular form of the string
      */
     public function getSingularName(string $string): string
     {
@@ -23,22 +20,14 @@ class Guard
 
     /**
      * Get table name of a model.
-     *
-     * @param  string  $class  The fully qualified class name
-     * @return string The table name for the model
      */
     public function getTableName(string $class): string
     {
-        static $cache = [];
-
-        return $cache[$class] ??= resolve($class)->getTable();
+        return resolve($class)->getTable();
     }
 
     /**
      * Sort an array of strings.
-     *
-     * @param  array<int, string>  $array  The array to sort
-     * @return array<int, string> The sorted array
      */
     public function getSortPivotTable(array $array): array
     {
@@ -50,9 +39,6 @@ class Guard
 
     /**
      * Get pivot table name for a given array of models.
-     *
-     * @param  array<int, string>  $array  The array of model classes
-     * @return string The pivot table name
      */
     public function getPivotTableName(array $array): string
     {

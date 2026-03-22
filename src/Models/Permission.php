@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Models;
 
-use AmdadulHaq\Guard\Concerns\ChecksRoles;
-use AmdadulHaq\Guard\Concerns\ResolvesModels;
+use AmdadulHaq\Guard\Concerns\HasRoles;
 use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
 use AmdadulHaq\Guard\Enums\PermissionType;
 use AmdadulHaq\Guard\Facades\Guard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Arr;
 
 /**
  * @property string $name
@@ -22,10 +22,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Permission extends Model implements RolesContract
 {
-    use ChecksRoles;
-    use ResolvesModels;
+    use HasRoles;
 
-    /** @var array<int, string> */
     protected $guarded = [];
 
     /**
@@ -75,7 +73,14 @@ class Permission extends Model implements RolesContract
      */
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(config('guard.models.role'));
+        $roleModel = config('guard.models.role');
+
+        return $this->belongsToMany(
+            $roleModel,
+            Guard::getPivotTableName(Arr::only(config('guard.models'), ['permission', 'role'])),
+            Guard::getSingularName($this->getTable()).'_id',
+            Guard::getSingularName(Guard::getTableName($roleModel)).'_id'
+        );
     }
 
     /**
@@ -132,17 +137,7 @@ class Permission extends Model implements RolesContract
     }
 
     /**
-     * Permissions relation.
-     */
-    public function permissions(): BelongsToMany
-    {
-        return $this->belongsToMany(config('guard.models.permission'));
-    }
-
-    /**
      * Get permission names - a permission only has itself.
-     *
-     * @return array<int, string>
      */
     public function getPermissionNames(): array
     {
@@ -150,87 +145,11 @@ class Permission extends Model implements RolesContract
     }
 
     /**
-     * Get role names assigned to this permission.
-     *
-     * @return array<int, string>
-     */
-    public function getRoleNames(): array
-    {
-        return $this->roles->pluck('name')->toArray();
-    }
-
-    /**
      * Give role to the permission.
      */
-    public function giveRoleTo(Model|string $role): Model
+    public function giveRoleTo(Model|string|int|array ...$roles): Model
     {
-        $role = $this->resolveRole($role);
-        $this->roles()->syncWithoutDetaching([$role->getKey()]);
-        $this->clearGuardCache();
-
-        return $this;
-    }
-
-    /**
-     * Sync roles to the permission.
-     *
-     * @param  array<int, int|string>  $roles
-     * @return array<string, array<int, int|string>>
-     */
-    public function syncRoles(array $roles): array
-    {
-        $roleIds = $this->getRoleIds($roles);
-
-        $synced = $this->roles()->sync($roleIds);
-        $this->clearGuardCache();
-
-        return $synced;
-    }
-
-    /**
-     * Revoke role from the permission.
-     */
-    public function revokeRole(Model|string $role): int
-    {
-        $role = $this->resolveRole($role, false);
-
-        $detached = $this->roles()->detach($role);
-        $this->clearGuardCache();
-
-        return $detached;
-    }
-
-    /**
-     * Get role IDs from array of IDs or names.
-     *
-     * @param  array<int, int|string>  $roles
-     * @return array<int, int>
-     */
-    protected function getRoleIds(array $roles): array
-    {
-        return collect($roles)
-            ->map(fn ($role): ?int => is_numeric($role) ? (int) $role : $this->getRoleIdByName($role))
-            ->filter()
-            ->values()
-            ->all();
-    }
-
-    /**
-     * Get role ID by name.
-     */
-    protected function getRoleIdByName(string $roleName): ?int
-    {
-        return config('guard.models.role')::query()
-            ->where('name', $roleName)
-            ->first()?->id;
-    }
-
-    /**
-     * Alias for giveRoleTo - assigns role to permission.
-     */
-    public function assignRole(Model|string $role): Model
-    {
-        return $this->giveRoleTo($role);
+        return $this->assignRole(...$roles);
     }
 
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Middleware;
 
-use AmdadulHaq\Guard\Contracts\User as UserContract;
+use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
 use AmdadulHaq\Guard\Exceptions\PermissionDeniedException;
 use Closure;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ class RoleMiddleware
     {
         $user = $request->user();
 
-        abort_unless($user instanceof UserContract, 403, 'Unauthenticated.');
+        abort_unless($user instanceof RolesContract, 403, 'Unauthenticated.');
 
         // Flatten roles array (handles both 'admin,editor' and 'admin', 'editor' formats)
         $flattenedRoles = collect($roles)->flatMap(fn ($role): array => explode(',', $role))->all();

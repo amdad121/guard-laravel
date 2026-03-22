@@ -30,6 +30,27 @@ php artisan migrate
 
 ### 3. Setup your User model
 
+Choose one setup:
+
+**Roles only**
+
+```php
+<?php
+
+namespace App\Models;
+
+use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
+use AmdadulHaq\Guard\Concerns\HasRoles;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class User extends Authenticatable implements RolesContract
+{
+    use HasRoles;
+}
+```
+
+**Roles + Permissions**
+
 ```php
 <?php
 
@@ -50,8 +71,8 @@ class User extends Authenticatable implements UserContract
 ### 4. Create your first role and permission
 
 ```bash
-php artisan guard:create-role admin --label="Administrator"
-php artisan guard:create-permission users.create --label="Create Users"
+php artisan guard:create-role admin Administrator
+php artisan guard:create-permission users.create "Create Users"
 ```
 
 ### 5. Protect your routes
@@ -134,6 +155,27 @@ Pivot table names are derived from model table names; the defaults shown above a
 
 ### Step 3: Configure User Model
 
+You can use the package in two ways.
+
+**Roles only**
+
+```php
+<?php
+
+namespace App\Models;
+
+use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
+use AmdadulHaq\Guard\Concerns\HasRoles;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class User extends Authenticatable implements RolesContract
+{
+    use HasRoles;
+}
+```
+
+**Roles + Permissions**
+
 ```php
 <?php
 
@@ -192,7 +234,21 @@ return [
 
 ### User Setup
 
-Users implement the `UserContract` which combines `Roles` and `Permissions` contracts:
+Use one of these setups depending on what your app needs.
+
+**Roles only**
+
+```php
+use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
+use AmdadulHaq\Guard\Concerns\HasRoles;
+
+class User extends Authenticatable implements RolesContract
+{
+    use HasRoles;
+}
+```
+
+**Roles + Permissions**
 
 ```php
 use AmdadulHaq\Guard\Contracts\User as UserContract;
@@ -201,10 +257,16 @@ use AmdadulHaq\Guard\Concerns\HasPermissions;
 
 class User extends Authenticatable implements UserContract
 {
-    use HasRoles;      // Role management methods
-    use HasPermissions; // Permission management methods
+    use HasRoles;
+    use HasPermissions;
 }
 ```
+
+Notes:
+
+- `HasPermissions` on the user model is for permission checks.
+- Users do not receive permissions directly.
+- Assign permissions to roles, then users inherit them from those roles.
 
 ### Creating Roles
 
@@ -220,7 +282,10 @@ $adminRole = Role::create([
 ]);
 
 // Create via command
-// php artisan guard:create-role moderator --label="Moderator"
+// php artisan guard:create-role moderator "Moderator"
+// php artisan guard:create-role moderator "Moderator" 1
+// php artisan guard:create-role moderator "Moderator" user@example.com
+// php artisan guard:create-role moderator "Moderator" "Jane Doe"
 ```
 
 **Role Model Methods:**
@@ -257,7 +322,9 @@ Permission::create([
 ]);
 
 // Create via command
-// php artisan guard:create-permission users.delete --label="Delete Users"
+// php artisan guard:create-permission users.delete "Delete Users"
+// php artisan guard:create-permission users.delete "Delete Users" 1
+// php artisan guard:create-permission users.delete "Delete Users" admin
 ```
 
 **Permission Model Methods:**
@@ -302,11 +369,12 @@ The `is_wildcard` boolean is automatically set when the name ends with `*`.
 
 ```php
 // Single role
-$user->assignRole('administrator');
-$user->assignRole($roleModel);
+$user->assignRole('administrator'); // by role name
+$user->assignRole($roleModel); // by role model
 
-// Multiple roles
-$user->assignRole(['administrator', 'editor']);
+// Multiple roles in one call
+$user->assignRole('administrator', 'editor');
+$user->assignRole([$roleModel, $roleId, 'moderator']);
 
 // Sync (replaces all)
 $user->syncRoles(['administrator', 'editor']);
@@ -341,11 +409,12 @@ $user->getRoleNames(); // ['administrator', 'editor']
 
 ```php
 // Single permission
-$role->givePermissionTo('users.create');
-$role->givePermissionTo($permissionModel);
+$role->givePermissionTo('users.create'); // by permission name
+$role->givePermissionTo($permissionModel); // by permission model
 
-// Multiple permissions
-$role->givePermissionTo(['users.create', 'users.edit', 'users.delete']);
+// Multiple permissions in one call
+$role->givePermissionTo('users.create', 'users.edit');
+$role->givePermissionTo([$permissionModel, $permissionId, 'users.delete']);
 
 // Sync (replaces all)
 $role->syncPermissions(['users.create', 'users.edit']);
@@ -376,7 +445,7 @@ $user->hasPermission($permissionModel);
 // Wildcard matching
 $user->hasPermission('posts.*');
 
-// Get all permissions (from roles)
+// Get all permissions inherited from roles
 $user->getPermissions();
 
 // Get permission names array
@@ -523,38 +592,42 @@ Guard provides custom Blade directives for role checking, in addition to Laravel
 **Create a Role:**
 
 ```bash
-php artisan guard:create-role admin --label="Administrator"
+php artisan guard:create-role admin Administrator
 
-# With optional user assignment
-php artisan guard:create-role moderator --label="Moderator" --user=1
+# With optional user assignment as the third positional argument
+php artisan guard:create-role moderator Moderator 1
 ```
 
 **Create a Permission:**
 
 ```bash
-php artisan guard:create-permission users.create --label="Create Users"
+php artisan guard:create-permission users.create "Create Users"
 
-# With optional role assignment
-php artisan guard:create-permission posts.delete --label="Delete Posts" --role=1
+# With optional role assignment as the third positional argument
+php artisan guard:create-permission posts.delete "Delete Posts" 1
 ```
 
-Both commands use interactive Laravel Prompts if arguments are not provided.
+Both commands support Laravel Prompts when optional assignment arguments are omitted.
+
+- `guard:create-role` prompts for an optional user identifier and accepts a user ID, email, or name.
+- `guard:create-permission` prompts for an optional role identifier and accepts a role ID or role name.
 
 ### Query Scopes
 
 ```php
-// Users with specific role
-User::whereHas('roles', function ($query) {
-    $query->where('name', 'administrator');
-})->get();
+// Users with a specific role
+User::query()->withRoles('administrator')->get();
 
-// Users with specific permission
-User::whereHas('roles.permissions', function ($query) {
-    $query->where('name', 'users.create');
-})->get();
+// Users with a specific permission inherited through roles
+User::query()->withPermissions('users.create')->get();
 
-// Note: The traits include scopeWithRoles and scopeWithPermissions
-// which are available for direct use in your User model
+// Role scopes
+Role::query()->guarded()->get();
+Role::query()->unguarded()->get();
+
+// Permission scopes
+Permission::query()->wildcard()->get();
+Permission::query()->byGroup('users')->get();
 ```
 
 ## 📚 Models Reference
@@ -564,7 +637,7 @@ User::whereHas('roles.permissions', function ($query) {
 **HasRoles trait provides:**
 
 - `roles()` - BelongsToMany relationship
-- `assignRole($role)` - Assign single or multiple roles
+- `assignRole(...$roles)` - Assign one or more roles
 - `syncRoles(array $roles, bool $detach = true)` - Sync roles
 - `syncRolesWithoutDetaching(array $roles)` - Sync without detaching
 - `revokeRole($role)` - Revoke specific role
@@ -576,15 +649,9 @@ User::whereHas('roles.permissions', function ($query) {
 
 **HasPermissions trait provides:**
 
-- `permissions()` - BelongsToMany relationship
-- `givePermissionTo($permission)` - Give single or multiple permissions
-- `syncPermissions(array $permissions)` - Sync permissions
-- `revokePermissionTo($permission)` - Revoke specific permission
-- `revokeAllPermissions()` - Revoke all permissions
-- `getPermissionNames()` - Get all permission names
+- `getPermissionNames()` - Get permission names inherited from roles
 - `hasPermission($permission)` - Check permission (by name or model)
-- `hasPermissionTo($permission)` - Check if has specific permission
-- `getPermissions()` - Get all permissions (from roles)
+- `getPermissions()` - Get all permissions inherited from roles
 
 ### Role Model
 
@@ -627,10 +694,10 @@ User::whereHas('roles.permissions', function ($query) {
 - `getGroup()` - Get resource group (e.g., 'users')
 - `getType()` - Get PermissionType enum
 - `roles()` - BelongsToMany to roles
-- `giveRoleTo($role)` - Give role to permission
+- `giveRoleTo(...$roles)` - Give one or more roles to permission
 - `syncRoles(array $roles)` - Sync roles
 - `revokeRole($role)` - Revoke role
-- `assignRole($role)` - Alias for giveRoleTo
+- `assignRole(...$roles)` - Alias for giveRoleTo
 
 **Scopes:**
 
@@ -866,9 +933,9 @@ A: Yes, it integrates with Laravel's authorization system.
 
 A: Guard is backend-only. For a UI, consider Filament Shield or build your own.
 
-**Q: How do I create custom Blade directives?**
+**Q: What Blade directives does Guard provide?**
 
-A: Use Laravel's built-in `@can`, `@canany`, `@cannot` directives which work automatically via Gate integration.
+A: Guard ships with `@role`, `@hasrole`, `@hasanyrole`, and `@hasallroles`. Laravel's built-in `@can`, `@canany`, and `@cannot` also work through Gate integration.
 
 **Q: Can permissions be assigned to permissions?**
 
