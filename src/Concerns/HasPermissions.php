@@ -4,103 +4,23 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Concerns;
 
-use AmdadulHaq\Guard\Facades\Guard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 
 /**
- * @mixin Model
+ * Permission checks for user-like models where permissions are inherited from roles.
  *
- * @property-read Collection<int, Model> $roles
- * @property-read Collection<int, Model> $permissions
+ * @mixin Model
  */
 trait HasPermissions
 {
-    use ResolvesModels;
-
     /**
-     * Get the permissions relation.
-     */
-    public function permissions(): BelongsToMany
-    {
-        return $this->belongsToMany(config('guard.models.permission'));
-    }
-
-    /**
-     * Give a permission to the role.
-     */
-    public function givePermissionTo(Model|string $permission): Model
-    {
-        $permission = $this->resolvePermission($permission);
-
-        $this->permissions()->syncWithoutDetaching([$permission->getKey()]);
-        $this->clearGuardCache();
-
-        return $this;
-    }
-
-    /**
-     * Sync permissions to role.
-     */
-    public function syncPermissions(array $permissions): array
-    {
-        $synced = $this->permissions()->sync($this->getPermissionIds($permissions));
-        $this->clearGuardCache();
-
-        return $synced;
-    }
-
-    /**
-     * Revoke a permission from the role.
-     */
-    public function revokePermissionTo(Model|string $permission): int
-    {
-        $permission = $this->resolvePermission($permission);
-
-        $detached = $this->permissions()->detach($permission);
-        $this->clearGuardCache();
-
-        return $detached;
-    }
-
-    /**
-     * Revoke all permissions from the role.
-     */
-    public function revokeAllPermissions(): int
-    {
-        $detached = $this->permissions()->detach();
-        $this->clearGuardCache();
-
-        return $detached;
-    }
-
-    /**
-     * Check if the role has a permission.
-     */
-    public function hasPermissionTo(Model|string $permission): bool
-    {
-        $permission = $this->resolvePermission($permission, false);
-
-        return $permission !== null && $this->permissions()
-            ->whereKey($permission->getKey())
-            ->exists();
-    }
-
-    /**
-     * Get all permissions for the model.
+     * Get all permissions inherited through roles.
      */
     public function getPermissions(): Collection
     {
-        // @phpstan-ignore-next-line - Defensive check for models without roles
-        if (! method_exists($this, 'roles')) {
-            return collect();
-        }
-
-        return $this->roles
-            ->filter(fn (Model $role): bool => method_exists($role, 'permissions'))
-            ->flatMap(fn (Model $role) => $role->permissions()->get())
+        return $this->getPermissionsViaRoles()
             ->unique(fn (Model $permission) => $permission->getKey())
             ->values();
     }
@@ -132,38 +52,19 @@ trait HasPermissions
     }
 
     /**
-     * Get the permission names.
-     *
-     * @return array<int, string>
+     * Get the permission names inherited through roles.
      */
     public function getPermissionNames(): array
     {
-        return $this->permissions->pluck('name')->toArray();
+        return $this->getAllPermissionNames()->all();
     }
 
     /**
-     * Get permission IDs from array of IDs or names.
+     * Scope a query to include models with specific permissions.
      */
-    protected function getPermissionIds(array $permissions): array
+    protected function scopeWithPermissions(Builder $query, string|array $permissions): Builder
     {
-        return collect($permissions)
-            ->map(fn ($permission) => is_numeric($permission)
-                ? (int) $permission
-                : $this->getPermissionIdByName($permission)
-            )
-            ->filter()
-            ->values()
-            ->all();
-    }
-
-    /**
-     * Get permission ID by name.
-     */
-    protected function getPermissionIdByName(string $permissionName): ?int
-    {
-        return config('guard.models.permission')::query()
-            ->where('name', $permissionName)
-            ->value('id');
+        return $query->whereHas('roles.permissions', fn (Builder $q) => $q->whereIn('name', (array) $permissions));
     }
 
     /**
@@ -171,14 +72,8 @@ trait HasPermissions
      */
     protected function getAllPermissionNames(): Collection
     {
-        // @phpstan-ignore-next-line - Defensive check for models without roles
-        if (! method_exists($this, 'roles')) {
-            return collect();
-        }
-
-        return $this->roles
-            ->filter(fn (Model $role): bool => method_exists($role, 'permissions'))
-            ->flatMap(fn (Model $role) => $role->permissions()->pluck('name'))
+        return $this->getPermissionsViaRoles()
+            ->pluck('name')
             ->unique()
             ->values();
     }
@@ -208,22 +103,22 @@ trait HasPermissions
     }
 
     /**
-     * Scope a query to include models with specific permissions.
+     * Get permissions inherited through roles.
      */
-    protected function scopeWithPermissions(Builder $query, string|array $permissions): Builder
+    protected function getPermissionsViaRoles(): Collection
     {
-        return $query->whereHas('roles.permissions', fn (Builder $q) => $q->whereIn('name', (array) $permissions));
-    }
-
-    /**
-     * Clear cached permissions/roles if caching is enabled.
-     */
-    protected function clearGuardCache(): void
-    {
-        if (! config('guard.cache.enabled', true)) {
-            return;
+        if (! method_exists($this, 'roles')) {
+            return collect();
         }
 
-        Guard::clearCache();
+        $roles = $this->roles()->with('permissions')->get();
+
+        return $roles
+            ->filter(fn (Model $role): bool => method_exists($role, 'permissions'))
+            ->flatMap(function (Model $role): Collection {
+                $permissions = $role->getRelationValue('permissions');
+
+                return $permissions instanceof Collection ? $permissions : collect();
+            });
     }
 }

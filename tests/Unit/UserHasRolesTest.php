@@ -35,6 +35,16 @@ it('can assign role to user by name', function (): void {
         ->first()->name->toBe('admin');
 });
 
+it('can assign multiple roles to user in one call', function (): void {
+    $role2 = Role::query()->create(['name' => 'editor']);
+    $role3 = Role::query()->create(['name' => 'moderator']);
+
+    $this->user->assignRole('admin', [$role2, $role3->id]);
+
+    expect($this->user->fresh()->roles->pluck('name')->sort()->values()->all())
+        ->toEqual(['admin', 'editor', 'moderator']);
+});
+
 it('can sync roles to user', function (): void {
     $role2 = Role::query()->create(['name' => 'editor']);
 
