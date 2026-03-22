@@ -2,6 +2,15 @@
 
 All notable changes to `guard-laravel` will be documented in this file.
 
+## v1.4.0 - 2026-03-22
+
+### 📚 Documentation
+
+- Updated changelog metadata for the `v1.4.0` release
+- No package API or runtime behavior changes in this tag
+
+---
+
 ## v1.3.0 - 2026-03-19
 
 ### ✨ New Features

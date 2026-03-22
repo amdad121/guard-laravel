@@ -1,10 +1,10 @@
 # Upgrade Guide
 
-Current Version: **v1.2.1**
+Current Version: **v1.4.0**
 
 ## Quick Upgrade
 
-### Upgrading to v1.2.1 (Latest)
+### Upgrading to v1.4.0 (Latest)
 
 1. **Update the package**
 
@@ -20,9 +20,35 @@ Current Version: **v1.2.1**
     php artisan view:clear
     ```
 
-3. **New Feature: Blade Directives** (Optional)
+3. **Review release-specific changes**
 
-    v1.2.1 introduces custom Blade directives for role checking. No code changes required - they're automatically available:
+    If you're already on `v1.3.x`, `v1.4.0` is a documentation-only release and does not require application code changes.
+
+    If you're upgrading from `v1.2.x` or earlier, review the `v1.2.1` Blade directives and `v1.3.0` Laravel 13 support updates below.
+
+### Upgrading to v1.3.0
+
+1. **Update the package**
+
+    ```bash
+    composer update amdadulhaq/guard-laravel
+    ```
+
+2. **Laravel 13 support**
+
+    `v1.3.0` adds Laravel 13 support. No package API changes are required, but confirm your application and dependency set are compatible before upgrading.
+
+### Upgrading to v1.2.1
+
+1. **Update the package**
+
+    ```bash
+    composer update amdadulhaq/guard-laravel
+    ```
+
+2. **New Feature: Blade Directives** (Optional)
+
+    `v1.2.1` introduces custom Blade directives for role checking. No code changes are required; they are automatically available:
 
     ```blade
     @role('administrator')
