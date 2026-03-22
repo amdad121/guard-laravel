@@ -5,7 +5,7 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/amdad121/guard-laravel/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/amdad121/guard-laravel/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/amdadulhaq/guard-laravel.svg?style=flat-square)](https://packagist.org/packages/amdadulhaq/guard-laravel)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat-square&logo=php)](https://php.net)
-[![Laravel Version](https://img.shields.io/badge/Laravel-10%2F11%2F12-FF2D20?style=flat-square&logo=laravel)](https://laravel.com)
+[![Laravel Version](https://img.shields.io/badge/Laravel-10%2F11%2F12%2F13-FF2D20?style=flat-square&logo=laravel)](https://laravel.com)
 
 > A powerful, flexible, and developer-friendly role and permission management system for Laravel applications.
 
@@ -62,7 +62,7 @@ Route::middleware('role:admin')->get('/admin', [AdminController::class, 'index']
 
 ## ✨ Features
 
-- 🎯 **Modern PHP & Laravel** - Built for PHP 8.2+ and Laravel 10/11/12
+- 🎯 **Modern PHP & Laravel** - Built for PHP 8.2+ and Laravel 10/11/12/13
 - 🔐 **Flexible Permission System** - Users can have permissions via roles
 - 🎭 **Wildcard Permissions** - Use `posts.*` to match all post-related permissions
 - ⚡ **Smart Caching** - Automatic cache invalidation for optimal performance
@@ -108,7 +108,7 @@ Route::middleware('role:admin')->get('/admin', [AdminController::class, 'index']
 ### Requirements
 
 - **PHP**: 8.2, 8.3, 8.4, or 8.5
-- **Laravel**: 10.x, 11.x, or 12.x
+- **Laravel**: 10.x, 11.x, 12.x, or 13.x
 - **Database**: MySQL 5.7+, PostgreSQL 9.6+, SQLite 3.8+, or SQL Server 2017+
 
 ### Step 1: Install via Composer
