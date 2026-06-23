@@ -42,7 +42,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements RoleableContract
 {
- use Roleable;
+    use Roleable;
 }
 ```
 
@@ -82,24 +82,27 @@ Building and maintaining high-quality open-source packages takes hundreds of hou
 > **[Sponsor the Project](https://github.com/sponsors/amdad121)**
 > Ensure the package stays actively maintained, receives rapid bug fixes, and continuous feature updates by becoming a monthly sponsor.
 
+> **[Donate to the Developer](https://www.buymeacoffee.com/amdad121)**
+> Did this package save you a weekend of work? Send a one-time tip via Buy Me a Coffee to directly support Amdadul Haq's open-source efforts!
+
 ## Table of Contents
 
 - [Installation](#installation)
 - [Upgrade Guide](UPGRADE.md)
 - [Configuration](#configuration)
 - [Usage](#usage)
- - [User Setup](#user-setup)
- - [Creating Roles](#creating-roles)
- - [Creating Permissions](#creating-permissions)
- - [Wildcard Permissions](#wildcard-permissions)
- - [Role Management](#role-management)
- - [Permission Management](#permission-management)
- - [Checking Access](#checking-access)
- - [Middleware](#middleware)
- - [Gate Integration](#gate-integration)
- - [Blade Directives](#blade-directives)
- - [Artisan Commands](#artisan-commands)
- - [Query Scopes](#query-scopes)
+    - [User Setup](#user-setup)
+    - [Creating Roles](#creating-roles)
+    - [Creating Permissions](#creating-permissions)
+    - [Wildcard Permissions](#wildcard-permissions)
+    - [Role Management](#role-management)
+    - [Permission Management](#permission-management)
+    - [Checking Access](#checking-access)
+    - [Middleware](#middleware)
+    - [Gate Integration](#gate-integration)
+    - [Blade Directives](#blade-directives)
+    - [Artisan Commands](#artisan-commands)
+    - [Query Scopes](#query-scopes)
 - [Models Reference](#models-reference)
 - [Exceptions](#exceptions)
 - [Caching](#caching)
@@ -151,7 +154,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements RoleableContract
 {
- use Roleable;
+    use Roleable;
 }
 ```
 
@@ -161,34 +164,34 @@ class User extends Authenticatable implements RoleableContract
 php artisan vendor:publish --tag="guard-config"
 ```
 
-## ️ Configuration
+## Configuration
 
 The `config/guard.php` file:
 
 ```php
 return [
- 'models' => [
- 'user' => \App\Models\User::class,
- 'role' => \AmdadulHaq\Guard\Models\Role::class,
- 'permission' => \AmdadulHaq\Guard\Models\Permission::class,
- ],
- 'tables' => [
- 'roles' => 'roles',
- 'permissions' => 'permissions',
- ],
- 'cache' => [
- 'enabled' => env('GUARD_CACHE_ENABLED', true),
- 'roles_duration' => (int) env('GUARD_ROLES_CACHE_DURATION', 3600),
- 'permissions_duration' => (int) env('GUARD_PERMISSIONS_CACHE_DURATION', 3600),
- ],
- 'middleware' => [
- 'role' => 'role',
- 'permission' => 'permission',
- 'role_or_permission' => 'role_or_permission',
- ],
- 'wildcard' => [
- 'enabled' => env('GUARD_WILDCARD_ENABLED', true),
- ],
+    'models' => [
+        'user' => \App\Models\User::class,
+        'role' => \AmdadulHaq\Guard\Models\Role::class,
+        'permission' => \AmdadulHaq\Guard\Models\Permission::class,
+    ],
+    'tables' => [
+        'roles' => 'roles',
+        'permissions' => 'permissions',
+    ],
+    'cache' => [
+        'enabled' => env('GUARD_CACHE_ENABLED', true),
+        'roles_duration' => (int) env('GUARD_ROLES_CACHE_DURATION', 3600),
+        'permissions_duration' => (int) env('GUARD_PERMISSIONS_CACHE_DURATION', 3600),
+    ],
+    'middleware' => [
+        'role' => 'role',
+        'permission' => 'permission',
+        'role_or_permission' => 'role_or_permission',
+    ],
+    'wildcard' => [
+        'enabled' => env('GUARD_WILDCARD_ENABLED', true),
+    ],
 ];
 ```
 
@@ -202,7 +205,7 @@ use AmdadulHaq\Guard\Concerns\Roleable;
 
 class User extends Authenticatable implements RoleableContract
 {
- use Roleable;
+    use Roleable;
 }
 ```
 
@@ -219,10 +222,10 @@ use AmdadulHaq\Guard\Models\Role;
 
 // Create a role
 $adminRole = Role::create([
- 'name' => 'administrator',
- 'label' => 'Administrator',
- 'description' => 'Full system access',
- 'is_guarded' => true, // Protected from deletion
+    'name' => 'administrator',
+    'label' => 'Administrator',
+    'description' => 'Full system access',
+    'is_guarded' => true, // Protected from deletion
 ]);
 
 // Create via command
@@ -235,14 +238,14 @@ php artisan guard:create-role moderator "Moderator" "Jane Doe"
 **Role Model Methods:**
 
 ```php
-$role->getName(); // Get role name
-$role->isProtectedRole(); // Check if guarded
-$role->getPermissionNames(); // Get all permission names
-$role->users; // Get users with this role
+$role->getName();              // Get role name
+$role->isProtectedRole();      // Check if guarded
+$role->getPermissionNames();   // Get all permission names
+$role->users;                  // Get users with this role
 
 // Query scopes
-Role::guarded()->get(); // Only guarded roles
-Role::unguarded()->get(); // Only unguarded roles
+Role::guarded()->get();        // Only guarded roles
+Role::unguarded()->get();      // Only unguarded roles
 ```
 
 ### Creating Permissions
@@ -252,17 +255,17 @@ use AmdadulHaq\Guard\Models\Permission;
 
 // Simple permission
 Permission::create([
- 'name' => 'users.create',
- 'label' => 'Create Users',
- 'description' => 'Can create new users',
- 'group' => 'users', // For organization
+    'name' => 'users.create',
+    'label' => 'Create Users',
+    'description' => 'Can create new users',
+    'group' => 'users', // For organization
 ]);
 
 // Wildcard permission (auto-sets is_wildcard = true)
 Permission::create([
- 'name' => 'posts.*',
- 'label' => 'Manage All Posts',
- 'group' => 'posts',
+    'name' => 'posts.*',
+    'label' => 'Manage All Posts',
+    'group' => 'posts',
 ]);
 
 // Create via command
@@ -274,17 +277,17 @@ php artisan guard:create-permission users.delete "Delete Users" admin
 **Permission Model Methods:**
 
 ```php
-$permission->getName(); // Get permission name
-$permission->getLabel(); // Get human-readable label
-$permission->getDescription(); // Get description
-$permission->isWildcard(); // Check if wildcard (e.g., posts.*)
-$permission->getGroup(); // Get group (e.g., 'users' from 'users.create')
-$permission->getType(); // Get PermissionType enum (e.g., PermissionType::CREATE)
-$permission->roles; // Get roles with this permission
+$permission->getName();          // Get permission name
+$permission->getLabel();         // Get human-readable label
+$permission->getDescription();   // Get description
+$permission->isWildcard();       // Check if wildcard (e.g., posts.*)
+$permission->getGroup();         // Get group (e.g., 'users' from 'users.create')
+$permission->getType();          // Get PermissionType enum (e.g., PermissionType::CREATE)
+$permission->roles;              // Get roles with this permission
 
 // Query scopes
-Permission::wildcard()->get(); // Only wildcard permissions
-Permission::byGroup('users')->get(); // Permissions in users group
+Permission::wildcard()->get();           // Only wildcard permissions
+Permission::byGroup('users')->get();     // Permissions in users group
 ```
 
 ### Wildcard Permissions
@@ -299,9 +302,9 @@ Permission::create(['name' => 'posts.*']);
 $role->givePermissionTo('posts.*');
 
 // Now user can do all of these:
-$user->hasPermission('posts.create'); // true
-$user->hasPermission('posts.update'); // true
-$user->hasPermission('posts.delete'); // true
+$user->hasPermission('posts.create');  // true
+$user->hasPermission('posts.update');  // true
+$user->hasPermission('posts.delete');  // true
 $user->hasPermission('posts.publish'); // true
 ```
 
@@ -337,11 +340,11 @@ $user->revokeRoles(); // Revoke all
 
 ```php
 // Single role
-$user->hasRole('administrator'); // true/false
+$user->hasRole('administrator');              // true/false
 
 // Multiple roles
-$user->hasAllRoles(['admin', 'editor']); // Must have ALL
-$user->hasAnyRole(['admin', 'moderator']); // Must have ANY
+$user->hasAllRoles(['admin', 'editor']);     // Must have ALL
+$user->hasAnyRole(['admin', 'moderator']);   // Must have ANY
 
 // Get role names
 $user->getRoleNames(); // ['administrator', 'editor']
@@ -373,8 +376,8 @@ $role->revokeAllPermissions();
 **Checking Role Permissions:**
 
 ```php
-$role->hasPermissionTo('users.edit'); // Check if role has permission
-$role->getPermissionNames(); // Get all permission names
+$role->hasPermissionTo('users.edit');    // Check if role has permission
+$role->getPermissionNames();             // Get all permission names
 ```
 
 **Checking User Permissions:**
@@ -402,15 +405,15 @@ $user->getPermissionNames(); // ['users.create', 'users.edit']
 
 ```php
 if ($user->hasRole('administrator')) {
- // User has administrator role
+    // User has administrator role
 }
 
 if ($user->hasAllRoles(['admin', 'editor'])) {
- // User has both roles
+    // User has both roles
 }
 
 if ($user->hasAnyRole(['admin', 'moderator'])) {
- // User has at least one role
+    // User has at least one role
 }
 
 // Get all role names
@@ -421,11 +424,11 @@ $user->getRoleNames(); // ['administrator', 'editor']
 
 ```php
 if ($user->hasPermission('users.create')) {
- // User can create users
+    // User can create users
 }
 
 if ($user->hasPermission('posts.*')) {
- // User has wildcard permission for posts
+    // User has wildcard permission for posts
 }
 ```
 
@@ -439,7 +442,7 @@ Route::middleware('role:administrator')->get('/admin', [AdminController::class, 
 
 // Multiple roles (requires ANY)
 Route::middleware('role:admin,editor')->group(function () {
- Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 });
 
 // Permission middleware
@@ -453,7 +456,7 @@ Route::middleware('role_or_permission:admin,users.create')->get('/users', [UserC
 
 // Multiple role_or_permission
 Route::middleware('role_or_permission:admin,editor,posts.manage')->group(function () {
- Route::post('/manage', [Controller::class, 'handle']);
+    Route::post('/manage', [Controller::class, 'handle']);
 });
 ```
 
@@ -465,24 +468,24 @@ The package automatically registers Gates for all permissions and roles:
 // In controllers
 public function store(Request $request)
 {
- $this->authorize('users.create');
- // User can create users
+    $this->authorize('users.create');
+    // User can create users
 }
 
 // Using Gate facade
 use Illuminate\Support\Facades\Gate;
 
 if (Gate::allows('users.create')) {
- // Allowed
+    // Allowed
 }
 
 if (Gate::denies('users.delete')) {
- abort(403, 'Permission denied');
+    abort(403, 'Permission denied');
 }
 
 // Check for specific user
 if (Gate::forUser($otherUser)->allows('posts.edit')) {
- // That user can edit posts
+    // That user can edit posts
 }
 
 // Authorize roles
@@ -497,21 +500,21 @@ Guard provides custom Blade directives for role checking, in addition to Laravel
 
 ```blade
 @role('administrator')
- <div class="admin-panel">
- <h1>Admin Dashboard</h1>
- </div>
+    <div class="admin-panel">
+        <h1>Admin Dashboard</h1>
+    </div>
 @endrole
 
 @hasrole('editor')
- <p>Editor content here</p>
+    <p>Editor content here</p>
 @endhasrole
 
 @hasanyrole(['administrator', 'moderator'])
- <p>Content for admins or moderators</p>
+    <p>Content for admins or moderators</p>
 @endhasanyrole
 
 @hasallroles(['administrator', 'editor'])
- <p>Only for users with BOTH admin AND editor roles</p>
+    <p>Only for users with BOTH admin AND editor roles</p>
 @endhasallroles
 ```
 
@@ -519,15 +522,15 @@ Guard provides custom Blade directives for role checking, in addition to Laravel
 
 ```blade
 @can('users.create')
- <a href="/users/create">Create User</a>
+    <a href="/users/create">Create User</a>
 @endcan
 
 @canany(['users.create', 'users.edit'])
- <p>You can manage users</p>
+    <p>You can manage users</p>
 @endcanany
 
 @cannot('users.delete')
- <p>You cannot delete users</p>
+    <p>You cannot delete users</p>
 @endcannot
 ```
 
@@ -671,24 +674,24 @@ Guard::clearCache();
 
 ```php
 'cache' => [
- 'enabled' => true,
- 'roles_duration' => 3600, // 1 hour
- 'permissions_duration' => 3600, // 1 hour
+    'enabled' => true,
+    'roles_duration' => 3600,        // 1 hour
+    'permissions_duration' => 3600,  // 1 hour
 ],
 ```
 
-## ️ Database Structure
+## Database Structure
 
 ### Roles Table
 
 ```php
 Schema::create('roles', function (Blueprint $table) {
- $table->id();
- $table->string('name')->unique();
- $table->string('label')->nullable();
- $table->text('description')->nullable();
- $table->boolean('is_guarded')->default(false);
- $table->timestamps();
+    $table->id();
+    $table->string('name')->unique();
+    $table->string('label')->nullable();
+    $table->text('description')->nullable();
+    $table->boolean('is_guarded')->default(false);
+    $table->timestamps();
 });
 ```
 
@@ -696,13 +699,13 @@ Schema::create('roles', function (Blueprint $table) {
 
 ```php
 Schema::create('permissions', function (Blueprint $table) {
- $table->id();
- $table->string('name')->unique();
- $table->string('label')->nullable();
- $table->text('description')->nullable();
- $table->string('group')->nullable()->index();
- $table->boolean('is_wildcard')->default(false);
- $table->timestamps();
+    $table->id();
+    $table->string('name')->unique();
+    $table->string('label')->nullable();
+    $table->text('description')->nullable();
+    $table->string('group')->nullable()->index();
+    $table->boolean('is_wildcard')->default(false);
+    $table->timestamps();
 });
 ```
 
@@ -710,9 +713,9 @@ Schema::create('permissions', function (Blueprint $table) {
 
 ```php
 Schema::create('permission_role', function (Blueprint $table) {
- $table->foreignId('permission_id')->constrained()->cascadeOnDelete();
- $table->foreignId('role_id')->constrained()->cascadeOnDelete();
- $table->primary(['permission_id', 'role_id']);
+    $table->foreignId('permission_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('role_id')->constrained()->cascadeOnDelete();
+    $table->primary(['permission_id', 'role_id']);
 });
 ```
 
@@ -720,9 +723,9 @@ Schema::create('permission_role', function (Blueprint $table) {
 
 ```php
 Schema::create('role_user', function (Blueprint $table) {
- $table->foreignId('role_id')->constrained()->cascadeOnDelete();
- $table->foreignId('user_id')->constrained()->cascadeOnDelete();
- $table->primary(['role_id', 'user_id']);
+    $table->foreignId('role_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->primary(['role_id', 'user_id']);
 });
 ```
 
@@ -733,16 +736,16 @@ Schema::create('role_user', function (Blueprint $table) {
 ```php
 use AmdadulHaq\Guard\Enums\PermissionType;
 
-PermissionType::CREATE->label(); // "Create"
-PermissionType::READ->label(); // "Read"
-PermissionType::WRITE->label(); // "Write"
-PermissionType::UPDATE->label(); // "Update"
-PermissionType::DELETE->label(); // "Delete"
-PermissionType::VIEW_ANY->label(); // "View any"
-PermissionType::VIEW->label(); // "View"
-PermissionType::RESTORE->label(); // "Restore"
+PermissionType::CREATE->label();       // "Create"
+PermissionType::READ->label();         // "Read"
+PermissionType::WRITE->label();        // "Write"
+PermissionType::UPDATE->label();       // "Update"
+PermissionType::DELETE->label();       // "Delete"
+PermissionType::VIEW_ANY->label();     // "View any"
+PermissionType::VIEW->label();         // "View"
+PermissionType::RESTORE->label();      // "Restore"
 PermissionType::FORCE_DELETE->label(); // "Force delete"
-PermissionType::MANAGE->label(); // "Manage"
+PermissionType::MANAGE->label();       // "Manage"
 ```
 
 ### CacheKey
@@ -751,10 +754,10 @@ PermissionType::MANAGE->label(); // "Manage"
 use AmdadulHaq\Guard\Enums\CacheKey;
 
 CacheKey::PERMISSIONS->value; // 'guard_permissions'
-CacheKey::ROLES->value; // 'guard_roles'
+CacheKey::ROLES->value;       // 'guard_roles'
 ```
 
-## ️ Development
+## Development
 
 ### Code Quality Tools
 
@@ -821,18 +824,18 @@ php artisan tinker --execute="\AmdadulHaq\Guard\Facades\Guard::clearCache()"
 2. **Use wildcard permissions** to reduce permission count
 3. **Filter at database level** instead of loading all users:
 
- ```php
- // Good
- User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->get();
+    ```php
+    //  Good
+    User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->get();
 
- // Less efficient
- User::all()->filter(fn ($u) => $u->hasRole('admin'));
- ```
+    //  Less efficient
+    User::all()->filter(fn ($u) => $u->hasRole('admin'));
+    ```
 
 4. **Eager load** when needed:
- ```php
- User::with(['roles', 'roles.permissions'])->get();
- ```
+    ```php
+    User::with(['roles', 'roles.permissions'])->get();
+    ```
 
 ## FAQ
 
@@ -890,4 +893,4 @@ The MIT License (MIT). See [License File](LICENSE.md) for details.
 
 ---
 
-<p align="center">Made with ️ for the Laravel community</p>
+<p align="center">Made with ❤️ for the Laravel community</p>
