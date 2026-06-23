@@ -47,22 +47,29 @@ class UpgradeCommand extends Command
             $originalContent = $content;
 
             // 1. Update Traits
-            $content = str_replace(
-                'use AmdadulHaq\Guard\Concerns\HasRoles;',
+            // V1 legacy paths
+            $content = preg_replace(
+                '/use\s+AmdadulHaq\\\\Guard\\\\HasRoles\s*;/',
+                'use AmdadulHaq\Guard\Concerns\Roleable;',
+                $content
+            );
+            $content = preg_replace('/use\s+AmdadulHaq\\\\Guard\\\\HasPermissions\s*;\r?\n?/', '', $content);
+
+            // V2 pre-release paths (if they exist)
+            $content = preg_replace(
+                '/use\s+AmdadulHaq\\\\Guard\\\\Concerns\\\\HasRoles\s*;/',
                 'use AmdadulHaq\Guard\Concerns\Roleable;',
                 $content
             );
 
             // Remove HasPermissions trait usage entirely
-            $content = str_replace("use AmdadulHaq\Guard\Concerns\HasPermissions;\n", '', $content);
-            $content = str_replace("use AmdadulHaq\Guard\Concerns\HasPermissions;", '', $content);
+            $content = preg_replace('/use\s+AmdadulHaq\\\\Guard\\\\Concerns\\\\HasPermissions\s*;\r?\n?/', '', $content);
 
             // Replace actual trait uses inside the class
-            $content = str_replace('use HasRoles;', 'use Roleable;', $content);
-            $content = str_replace("use HasPermissions;\n", '', $content);
-            $content = str_replace('use HasPermissions, HasRoles;', 'use Roleable;', $content);
-            $content = str_replace('use HasRoles, HasPermissions;', 'use Roleable;', $content);
-            $content = str_replace('use HasPermissions;', '', $content);
+            $content = preg_replace('/use\s+HasRoles\s*;\r?\n?/', "use Roleable;\n", $content);
+            $content = preg_replace('/use\s+HasPermissions\s*;\r?\n?/', '', $content);
+            $content = preg_replace('/use\s+HasPermissions\s*,\s*HasRoles\s*;\r?\n?/', "use Roleable;\n", $content);
+            $content = preg_replace('/use\s+HasRoles\s*,\s*HasPermissions\s*;\r?\n?/', "use Roleable;\n", $content);
 
             // 2. Update Contracts
             $content = str_replace(
