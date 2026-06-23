@@ -75,19 +75,38 @@ class UpgradeCommand extends Command
                 'use AmdadulHaq\Guard\Contracts\Roleable as RoleableContract;',
                 $content
             );
+            $content = str_replace(
+                'use AmdadulHaq\Guard\Contracts\User as UserContract;',
+                'use AmdadulHaq\Guard\Contracts\Roleable as RoleableContract;',
+                $content
+            );
+            $content = str_replace(
+                'use AmdadulHaq\Guard\Contracts\User;',
+                'use AmdadulHaq\Guard\Contracts\Roleable as RoleableContract;',
+                $content
+            );
 
             // Remove Permissions contract entirely
             $content = str_replace("use AmdadulHaq\Guard\Contracts\Permissions;\n", '', $content);
             $content = str_replace("use AmdadulHaq\Guard\Contracts\Permissions;", '', $content);
-            $content = str_replace("use AmdadulHaq\Guard\Contracts\User;\n", '', $content);
-            $content = str_replace("use AmdadulHaq\Guard\Contracts\User;", '', $content);
+
+            // Deduplicate the RoleableContract import if both User and Roles were imported originally
+            $content = preg_replace(
+                "/(use AmdadulHaq\\\\Guard\\\\Contracts\\\\Roleable as RoleableContract;\r?\n){2,}/",
+                "use AmdadulHaq\\Guard\\Contracts\\Roleable as RoleableContract;\n",
+                $content
+            );
 
             // Replace implementation declarations
-            $content = str_replace('implements RolesContract', 'implements RoleableContract', $content);
-            $content = str_replace('implements Roles', 'implements RoleableContract', $content);
             $content = preg_replace('/implements\s+User,\s*RolesContract/', 'implements RoleableContract', $content);
             $content = preg_replace('/implements\s+RolesContract,\s*User/', 'implements RoleableContract', $content);
-            $content = preg_replace('/implements\s+User/', 'implements RoleableContract', $content);
+            $content = preg_replace('/implements\s+User,\s*Roles/', 'implements RoleableContract', $content);
+            $content = preg_replace('/implements\s+Roles,\s*User/', 'implements RoleableContract', $content);
+            
+            $content = str_replace('implements RolesContract', 'implements RoleableContract', $content);
+            $content = str_replace('implements Roles', 'implements RoleableContract', $content);
+            $content = preg_replace('/implements\s+User\b/', 'implements RoleableContract', $content);
+            $content = preg_replace('/implements\s+UserContract\b/', 'implements RoleableContract', $content);
 
             if ($content !== $originalContent) {
                 File::put($file->getRealPath(), $content);

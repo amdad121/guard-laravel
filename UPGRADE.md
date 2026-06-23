@@ -11,7 +11,7 @@ The `v2.0.0` release introduces strict architectural optimizations and removes a
 1. **Update the package**
 
     ```bash
-    composer update amdadulhaq/guard-laravel
+    composer require amdadulhaq/guard-laravel:^2.0
     ```
 
 2. **Run the Automatic Upgrade Command (Recommended)**
