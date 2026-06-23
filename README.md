@@ -82,9 +82,6 @@ Building and maintaining high-quality open-source packages takes hundreds of hou
 > **[Sponsor the Project](https://github.com/sponsors/amdad121)**
 > Ensure the package stays actively maintained, receives rapid bug fixes, and continuous feature updates by becoming a monthly sponsor.
 
-> **[Donate to the Developer](https://www.buymeacoffee.com/amdad121)**
-> Did this package save you a weekend of work? Send a one-time tip via Buy Me a Coffee to directly support Amdadul Haq's open-source efforts!
-
 ## Table of Contents
 
 - [Installation](#installation)
