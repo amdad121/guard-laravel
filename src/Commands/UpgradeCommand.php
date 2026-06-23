@@ -102,7 +102,7 @@ class UpgradeCommand extends Command
             $content = preg_replace('/implements\s+RolesContract,\s*User/', 'implements RoleableContract', $content);
             $content = preg_replace('/implements\s+User,\s*Roles/', 'implements RoleableContract', $content);
             $content = preg_replace('/implements\s+Roles,\s*User/', 'implements RoleableContract', $content);
-            
+
             $content = str_replace('implements RolesContract', 'implements RoleableContract', $content);
             $content = str_replace('implements Roles', 'implements RoleableContract', $content);
             $content = preg_replace('/implements\s+User\b/', 'implements RoleableContract', $content);
