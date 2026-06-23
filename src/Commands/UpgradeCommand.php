@@ -97,16 +97,17 @@ class UpgradeCommand extends Command
                 $content
             );
 
-            // Replace implementation declarations
-            $content = preg_replace('/implements\s+User,\s*RolesContract/', 'implements RoleableContract', $content);
-            $content = preg_replace('/implements\s+RolesContract,\s*User/', 'implements RoleableContract', $content);
-            $content = preg_replace('/implements\s+User,\s*Roles/', 'implements RoleableContract', $content);
-            $content = preg_replace('/implements\s+Roles,\s*User/', 'implements RoleableContract', $content);
+            // Replace implementation declarations anywhere in the file
+            $content = preg_replace('/\bRolesContract\b/', 'RoleableContract', $content);
+            $content = preg_replace('/\bUserContract\b/', 'RoleableContract', $content);
+            
+            // For 'User' and 'Roles', only match them if they are followed by a comma, opening brace, or end of line
+            // This prevents replacing random uses of the word 'User'
+            $content = preg_replace('/(?<=implements\s|,\s)\bUser\b(?=\s*,|\s*\{|\s*$)/', 'RoleableContract', $content);
+            $content = preg_replace('/(?<=implements\s|,\s)\bRoles\b(?=\s*,|\s*\{|\s*$)/', 'RoleableContract', $content);
 
-            $content = str_replace('implements RolesContract', 'implements RoleableContract', $content);
-            $content = str_replace('implements Roles', 'implements RoleableContract', $content);
-            $content = preg_replace('/implements\s+User\b/', 'implements RoleableContract', $content);
-            $content = preg_replace('/implements\s+UserContract\b/', 'implements RoleableContract', $content);
+            // Clean up any double RoleableContract caused by previous replacements (e.g. implements User, Roles)
+            $content = preg_replace('/RoleableContract\s*,\s*RoleableContract/', 'RoleableContract', $content);
 
             if ($content !== $originalContent) {
                 File::put($file->getRealPath(), $content);
@@ -125,7 +126,7 @@ class UpgradeCommand extends Command
 
         $this->newLine();
 
-        $migrationExists = ! empty(glob(database_path('migrations/*_create_guard_tables.php')));
+        $migrationExists = ! empty(glob(database_path('migrations/*_create_permissions_table.php'))) || ! empty(glob(database_path('migrations/*_create_roles_table.php')));
 
         if ($migrationExists) {
             $this->info('Existing Guard migrations found. Publishing V2 schema upgrade migrations...');
