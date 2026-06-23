@@ -125,7 +125,7 @@ class UpgradeCommand extends Command
 
         $this->newLine();
 
-        $migrationExists = !empty(glob(database_path('migrations/*_create_guard_tables.php')));
+        $migrationExists = ! empty(glob(database_path('migrations/*_create_guard_tables.php')));
 
         if ($migrationExists) {
             $this->info('Existing Guard migrations found. Updating them automatically...');
