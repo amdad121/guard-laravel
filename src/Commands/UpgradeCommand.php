@@ -100,7 +100,7 @@ class UpgradeCommand extends Command
             // Replace implementation declarations anywhere in the file
             $content = preg_replace('/\bRolesContract\b/', 'RoleableContract', $content);
             $content = preg_replace('/\bUserContract\b/', 'RoleableContract', $content);
-            
+
             // For 'User' and 'Roles', only match them if they are followed by a comma, opening brace, or end of line
             // This prevents replacing random uses of the word 'User'
             $content = preg_replace('/(?<=implements\s|,\s)\bUser\b(?=\s*,|\s*\{|\s*$)/', 'RoleableContract', $content);
