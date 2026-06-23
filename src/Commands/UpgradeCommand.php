@@ -128,12 +128,11 @@ class UpgradeCommand extends Command
         $migrationExists = ! empty(glob(database_path('migrations/*_create_guard_tables.php')));
 
         if ($migrationExists) {
-            $this->info('Existing Guard migrations found. Updating them automatically...');
+            $this->info('Existing Guard migrations found. Publishing V2 schema upgrade migrations...');
             $this->call('vendor:publish', [
-                '--tag' => 'guard-migrations',
-                '--force' => true,
+                '--tag' => 'guard-upgrade-migrations',
             ]);
-            $this->info('Migrations successfully updated!');
+            $this->info('Upgrade migrations successfully published! Please run `php artisan migrate`.');
         } else {
             $this->info('No existing Guard migrations found. You can publish them using:');
             $this->line('  php artisan vendor:publish --tag="guard-migrations"');

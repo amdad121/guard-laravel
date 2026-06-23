@@ -98,6 +98,10 @@ class GuardServiceProvider extends ServiceProvider
             __DIR__.'/../database/migrations/create_roles_table.php.stub' => database_path('migrations/'.date('Y_m_d_His').'_create_roles_table.php'),
             __DIR__.'/../database/migrations/create_permissions_table.php.stub' => database_path('migrations/'.date('Y_m_d_His', time() + 1).'_create_permissions_table.php'),
         ], 'guard-migrations');
+
+        $this->publishes([
+            __DIR__.'/../database/migrations/add_v2_columns_to_guard_tables.php.stub' => database_path('migrations/'.date('Y_m_d_His', time() + 2).'_add_v2_columns_to_guard_tables.php'),
+        ], 'guard-upgrade-migrations');
     }
 
     /**
