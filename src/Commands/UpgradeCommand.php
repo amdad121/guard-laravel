@@ -123,6 +123,22 @@ class UpgradeCommand extends Command
             $this->info("No models required upgrading. You're already up to date.");
         }
 
+        $this->newLine();
+
+        $migrationExists = !empty(glob(database_path('migrations/*_create_guard_tables.php')));
+
+        if ($migrationExists) {
+            $this->info('Existing Guard migrations found. Updating them automatically...');
+            $this->call('vendor:publish', [
+                '--tag' => 'guard-migrations',
+                '--force' => true,
+            ]);
+            $this->info('Migrations successfully updated!');
+        } else {
+            $this->info('No existing Guard migrations found. You can publish them using:');
+            $this->line('  php artisan vendor:publish --tag="guard-migrations"');
+        }
+
         return self::SUCCESS;
     }
 }
