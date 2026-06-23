@@ -4,14 +4,14 @@ All notable changes to `guard-laravel` will be documented in this file.
 
 ## v2.0.0 - 2026-06-23
 
-### 🔨 Breaking Changes
+### Breaking Changes
 
 - **Unified Traits**: Merged the `HasPermissions` trait logic directly into the `Roleable` trait (formerly `HasRoles`). Developers must now use `Roleable` trait and remove `HasPermissions`.
 - **Contract Consolidation**: Deleted the legacy `Roles` and `Permissions` contracts, and consolidated the methods into single, generic `Roleable` and `Permissionable` contracts to ensure Interface Segregation compliance. User model must now use `Roleable as RoleableContract` if using the `Roleable` trait.
 - **Removed Exceptions**: Removed `GuardException`, `RoleDoesNotExistException`, and `PermissionDoesNotExistException` in favor of standard Eloquent exceptions (`ModelNotFoundException`) and `PermissionDeniedException`.
 - **Commands Simplification**: Removed interactive fallback prompts (`laravel/prompts`) from `guard:create-role` and `guard:create-permission`. Commands now rely strictly on Laravel's native `PromptsForMissingInput` interface.
 
-### ✨ New Features & Improvements
+### New Features & Improvements
 
 - **Testing Expansion**: Added tests for `syncRolesWithoutDetaching`, `revokeRoles`, and `revokeAllPermissions` to ensure 100% feature coverage.
 - **Role Model cleanup**: Removed unused and redundant `HasPermissions` trait usage from the `Role` model.
@@ -21,7 +21,7 @@ All notable changes to `guard-laravel` will be documented in this file.
 
 ## v1.4.0 - 2026-03-22
 
-### 📚 Documentation
+### Documentation
 
 - Updated changelog metadata for the `v1.4.0` release
 - No package API or runtime behavior changes in this tag
@@ -30,7 +30,7 @@ All notable changes to `guard-laravel` will be documented in this file.
 
 ## v1.3.0 - 2026-03-19
 
-### ✨ New Features
+### New Features
 
 - **Laravel 13 Support**: Added support for Laravel 13
 - Updated `illuminate/contracts`, `illuminate/database`, and `illuminate/support` to `^13.0`
@@ -40,7 +40,7 @@ All notable changes to `guard-laravel` will be documented in this file.
 
 ## v1.2.2 - 2026-02-06
 
-### 📚 Documentation
+### Documentation
 
 - Updated README to remove direct user permissions section
 - Cleaned up documentation for better clarity
@@ -49,23 +49,23 @@ All notable changes to `guard-laravel` will be documented in this file.
 
 ## v1.2.1 - 2026-02-03
 
-### ✨ New Features
+### New Features
 
 - **Custom Blade Directives**:
-    - `@role('role-name')` - Check if user has a specific role
-    - `@hasrole('role-name')` - Alternative syntax for role checking
-    - `@hasanyrole(['admin', 'editor'])` - Check if user has any of the specified roles
-    - `@hasallroles(['admin', 'editor'])` - Check if user has all specified roles
-    - All directives support array or string parameters
-    - Automatic integration with authenticated user
+ - `@role('role-name')` - Check if user has a specific role
+ - `@hasrole('role-name')` - Alternative syntax for role checking
+ - `@hasanyrole(['admin', 'editor'])` - Check if user has any of the specified roles
+ - `@hasallroles(['admin', 'editor'])` - Check if user has all specified roles
+ - All directives support array or string parameters
+ - Automatic integration with authenticated user
 
-### 📚 Documentation
+### Documentation
 
 - Updated README.md with comprehensive Blade directives documentation
 - Added examples for all custom directives
 - Clarified difference between custom directives and Laravel's built-in `@can` directives
 
-### 🛠️ Code Quality
+### ️ Code Quality
 
 - Added `registerBladeDirectives()` method to ServiceProvider
 - Properly imported `Illuminate\Support\Facades\Blade`
@@ -75,61 +75,61 @@ All notable changes to `guard-laravel` will be documented in this file.
 
 ## v1.2.0 - 2026-02-02
 
-### 🔨 Breaking Changes
+### Breaking Changes
 
-- **Contracts renamed**: `HasRoles` → `Roles`, `HasPermissions` → `Permissions`
+- **Contracts renamed**: `HasRoles` `Roles`, `HasPermissions` `Permissions`
 - **Traits moved to Concerns directory**: All traits now in `src/Concerns/`
 - **Middleware updates**: All middlewares now support multiple roles/permissions via variadic parameters
 - **Method signatures updated**: All model assignment methods now accept `Model|string` parameters
 - **Shared concerns added**: `ChecksRoles` and `ResolvesModels` traits for DRY principle
 
-### ✨ New Features
+### New Features
 
 - **Improved Architecture**:
-    - Contracts and traits properly separated with no naming conflicts
-    - New `ChecksRoles` trait with shared role checking logic
-    - New `ResolvesModels` trait with shared model resolution logic
-    - Better type hints throughout codebase
-    - Improved code organization and maintainability
+ - Contracts and traits properly separated with no naming conflicts
+ - New `ChecksRoles` trait with shared role checking logic
+ - New `ResolvesModels` trait with shared model resolution logic
+ - Better type hints throughout codebase
+ - Improved code organization and maintainability
 
 - **Middleware Enhancements**:
-    - `RoleMiddleware`: Now supports multiple roles (comma-separated or variadic)
-    - `PermissionMiddleware`: Now supports multiple permissions
-    - `RoleOrPermissionMiddleware`: Now supports multiple roles or permissions
-    - All middlewares handle both formats: `role:admin,editor` or `role:admin`, `role:editor`
+ - `RoleMiddleware`: Now supports multiple roles (comma-separated or variadic)
+ - `PermissionMiddleware`: Now supports multiple permissions
+ - `RoleOrPermissionMiddleware`: Now supports multiple roles or permissions
+ - All middlewares handle both formats: `role:admin,editor` or `role:admin`, `role:editor`
 
 - **Code Quality**:
-    - 0 static analysis errors (Larastan)
-    - All files pass Laravel Pint linting
-    - Follows SOLID principles
-    - Proper separation of concerns
+ - 0 static analysis errors (Larastan)
+ - All files pass Laravel Pint linting
+ - Follows SOLID principles
+ - Proper separation of concerns
 
 - **Testing**:
-    - Added comprehensive middleware tests (10 new tests)
-    - Test User model now extends Authenticatable (proper Laravel usage)
-    - All 42 tests passing (77 assertions)
-    - 35 source files
+ - Added comprehensive middleware tests (10 new tests)
+ - Test User model now extends Authenticatable (proper Laravel usage)
+ - All 42 tests passing (77 assertions)
+ - 35 source files
 
 - **Documentation**:
-    - Updated README with new architecture
-    - Complete UPGRADE.md guide
-    - Clarified middleware usage with examples
+ - Updated README with new architecture
+ - Complete UPGRADE.md guide
+ - Clarified middleware usage with examples
 
-### 📚 Documentation
+### Documentation
 
 - Updated README.md with new contract and trait structure
 - Comprehensive UPGRADE.md with migration guide
 - Added examples for middleware multiple parameters
 - Clarified import statements for new structure
 
-### 🛠️ Code Quality
+### ️ Code Quality
 
 - Refactored code to follow DRY principle
 - Improved type hints for better IDE support
 - Better documentation comments
 - Enhanced error messages
 
-### 🔄 Migration Requirements
+### Migration Requirements
 
 Users upgrading to v1.2.0 need to:
 
@@ -138,7 +138,7 @@ Users upgrading to v1.2.0 need to:
 3. Update middleware usage to support multiple roles/permissions (if needed)
 4. Test application thoroughly after upgrade
 
-### 📊 Statistics
+### Statistics
 
 - **Source files**: 35 (increased from 26)
 - **Tests passing**: 42 (increased from 36)
@@ -146,13 +146,13 @@ Users upgrading to v1.2.0 need to:
 - **Static analysis**: 0 errors
 - **Code quality**: All files pass Laravel Pint
 
-### 🐛 Bug Fixes
+### Bug Fixes
 
 - Fixed middleware exception handling in test environment
 - Improved type resolution in model assignment methods
 - Fixed import paths in test files
 
-### 🎯 Improvements
+### Improvements
 
 - **SOLID Principles**: Better separation of concerns
 - **DRY Principle**: Shared traits reduce code duplication
@@ -164,37 +164,37 @@ Users upgrading to v1.2.0 need to:
 
 ## v1.1.0 - 2026-01-30
 
-### 🔨 Breaking Changes
+### Breaking Changes
 
 - Removed deprecated `detach()` usage in `syncRoles()` method
 - Changed return type of `assignRole()` from `Model` to `self`
 - Changed `revokeRole()` return type from `int` to `int` (number of roles remaining)
 
-### ✨ New Features
+### New Features
 
 - **HasPermissions Trait**:
-    - Added `revokeAllPermissions()` method to revoke all permissions
-    - Added `hasPermissionTo()` method to check if role has a permission
+ - Added `revokeAllPermissions()` method to revoke all permissions
+ - Added `hasPermissionTo()` method to check if role has a permission
 
 - **HasRoles Trait**:
-    - Added `syncRolesWithoutDetaching()` method to sync roles without detaching
-    - Added `revokeRole()` method to revoke a single role
-    - Added `revokeRoles()` method to revoke all roles
-    - Added `getRoleNames()` method to get all role names
-    - Improved `hasRole()` to handle Collection types
-    - Improved `hasAllRoles()` and `hasAnyRole()` to handle Collection types
-    - Simplified wildcard matching using `contains()` with closure
+ - Added `syncRolesWithoutDetaching()` method to sync roles without detaching
+ - Added `revokeRole()` method to revoke a single role
+ - Added `revokeRoles()` method to revoke all roles
+ - Added `getRoleNames()` method to get all role names
+ - Improved `hasRole()` to handle Collection types
+ - Improved `hasAllRoles()` and `hasAnyRole()` to handle Collection types
+ - Simplified wildcard matching using `contains()` with closure
 
 - **Models**:
-    - Removed outdated `static $table` pattern from `Permission` and `Role` models
-    - Now uses Laravel's built-in `getTable()` with config fallback
+ - Removed outdated `static $table` pattern from `Permission` and `Role` models
+ - Now uses Laravel's built-in `getTable()` with config fallback
 
 - **Service Provider**:
-    - Fixed `permissionsTableExists()` to use config table name
-    - Improved `registerModelObservers()` readability using `->each()`
-    - Improved `defineGatePermissions()` and `defineGateRoles()` readability
+ - Fixed `permissionsTableExists()` to use config table name
+ - Improved `registerModelObservers()` readability using `->each()`
+ - Improved `defineGatePermissions()` and `defineGateRoles()` readability
 
-### 📚 Documentation
+### Documentation
 
 - Added comprehensive Laravel-style documentation comments to config file
 - Added docblocks to all methods in Service Provider
@@ -202,7 +202,7 @@ Users upgrading to v1.2.0 need to:
 - Updated Contributing guide with correct script names
 - Updated code examples for new methods
 
-### 🛠️ Code Quality
+### ️ Code Quality
 
 - Improved type hints throughout codebase
 - Added proper exception handling documentation
@@ -210,7 +210,7 @@ Users upgrading to v1.2.0 need to:
 
 ## v1.0.0 - 2025-01-01
 
-### 🎉 Initial Stable Release
+### Initial Stable Release
 
 This marks the first stable release of Guard Laravel with full feature set and production-ready implementation.
 
