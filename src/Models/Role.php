@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Models;
 
-use AmdadulHaq\Guard\Concerns\HasPermissions;
-use AmdadulHaq\Guard\Contracts\Permissions as PermissionsContract;
+use AmdadulHaq\Guard\Concerns\HasGuardHelpers;
+use AmdadulHaq\Guard\Contracts\Permissionable as PermissionableContract;
 use AmdadulHaq\Guard\Facades\Guard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -18,9 +18,9 @@ use Illuminate\Support\Arr;
  * @property string|null $description
  * @property bool $is_guarded
  */
-class Role extends Model implements PermissionsContract
+class Role extends Model implements PermissionableContract
 {
-    use HasPermissions;
+    use HasGuardHelpers;
 
     protected $guarded = [];
 
@@ -95,7 +95,7 @@ class Role extends Model implements PermissionsContract
      */
     public function givePermissionTo(Model|string|int|array ...$permissions): Model
     {
-        $permissionIds = $this->getPermissionIds($this->normalizePermissions($permissions));
+        $permissionIds = $this->getModelIds('permission', $this->flattenArgs($permissions));
 
         $this->permissions()->syncWithoutDetaching($permissionIds);
         $this->clearGuardCache();
@@ -108,7 +108,7 @@ class Role extends Model implements PermissionsContract
      */
     public function syncPermissions(array $permissions): array
     {
-        $synced = $this->permissions()->sync($this->getPermissionIds($permissions));
+        $synced = $this->permissions()->sync($this->getModelIds('permission', $permissions));
         $this->clearGuardCache();
 
         return $synced;
@@ -119,7 +119,7 @@ class Role extends Model implements PermissionsContract
      */
     public function revokePermissionTo(Model|string $permission): int
     {
-        $permission = $this->resolvePermissionModel($permission);
+        $permission = $this->resolveModel('permission', $permission);
 
         $detached = $this->permissions()->detach($permission);
         $this->clearGuardCache();
@@ -141,18 +141,13 @@ class Role extends Model implements PermissionsContract
     /**
      * Check if the role has a permission assigned directly.
      */
-    public function hasPermissionTo(Model|string $permission): bool
+    public function hasPermission(Model|string $permission): bool
     {
-        $permission = $this->resolvePermissionModel($permission, false);
+        $permission = $this->resolveModel('permission', $permission, false);
 
         return $permission instanceof Model && $this->permissions()
             ->whereKey($permission->getKey())
             ->exists();
-    }
-
-    public function hasPermission(Model|string $permission): bool
-    {
-        return $this->hasPermissionTo($permission);
     }
 
     /**
@@ -163,63 +158,8 @@ class Role extends Model implements PermissionsContract
         return $query->where('is_guarded', true);
     }
 
-    /**
-     * Scope a query to only include unguarded roles.
-     */
     protected function scopeUnguarded(Builder $query): Builder
     {
         return $query->where('is_guarded', false);
-    }
-
-    protected function getPermissionIds(array $permissions): array
-    {
-        return collect($permissions)
-            ->map(function ($permission): ?int {
-                if ($permission instanceof Model) {
-                    return (int) $permission->getKey();
-                }
-
-                return is_numeric($permission)
-                    ? (int) $permission
-                    : $this->getPermissionIdByName($permission);
-            })
-            ->filter()
-            ->values()
-            ->all();
-    }
-
-    protected function normalizePermissions(array $permissions): array
-    {
-        return collect($permissions)
-            ->flatMap(fn ($permission): array => is_array($permission) ? $permission : [$permission])
-            ->values()
-            ->all();
-    }
-
-    protected function getPermissionIdByName(string $permissionName): ?int
-    {
-        return config('guard.models.permission')::query()
-            ->where('name', $permissionName)
-            ->value('id');
-    }
-
-    protected function resolvePermissionModel(Model|string $permission, bool $throw = true): ?Model
-    {
-        if (! is_string($permission)) {
-            return $permission;
-        }
-
-        $query = config('guard.models.permission')::query()->where('name', $permission);
-
-        return $throw ? $query->firstOrFail() : $query->first();
-    }
-
-    protected function clearGuardCache(): void
-    {
-        if (! config('guard.cache.enabled', true)) {
-            return;
-        }
-
-        Guard::clearCache();
     }
 }

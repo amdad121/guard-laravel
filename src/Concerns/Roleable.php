@@ -11,8 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
-trait HasRoles
+trait Roleable
 {
+    use HasGuardHelpers;
+
     /**
      * Get the roles relation.
      */
@@ -33,7 +35,7 @@ trait HasRoles
      */
     public function assignRole(Model|string|int|array ...$roles): self
     {
-        $roleIds = $this->getRoleIds($this->normalizeRoles($roles));
+        $roleIds = $this->getModelIds('role', $this->flattenArgs($roles));
 
         $this->roles()->syncWithoutDetaching($roleIds);
 
@@ -45,7 +47,7 @@ trait HasRoles
      */
     public function syncRoles(array $roles, bool $detach = true): array
     {
-        $roleIds = $this->getRoleIds($roles);
+        $roleIds = $this->getModelIds('role', $roles);
 
         return $detach
             ? $this->roles()->sync($roleIds)
@@ -65,7 +67,7 @@ trait HasRoles
      */
     public function revokeRole(Model|string $role): int
     {
-        $role = $this->resolveRoleModel($role, false);
+        $role = $this->resolveModel('role', $role, false);
 
         return $this->roles()->detach($role);
     }
@@ -128,32 +130,6 @@ trait HasRoles
             ->isNotEmpty();
     }
 
-    /**
-     * Get role IDs from array of IDs or names.
-     */
-    protected function getRoleIds(array $roles): array
-    {
-        return collect($roles)
-            ->map(function ($role): ?int {
-                if ($role instanceof Model) {
-                    return (int) $role->getKey();
-                }
-
-                return is_numeric($role) ? (int) $role : $this->getRoleIdByName($role);
-            })
-            ->filter()
-            ->values()
-            ->all();
-    }
-
-    protected function normalizeRoles(array $roles): array
-    {
-        return collect($roles)
-            ->flatMap(fn ($role): array => is_array($role) ? $role : [$role])
-            ->values()
-            ->all();
-    }
-
     protected function getAssignedRoleNames(): Collection
     {
         return $this->roles->pluck('name');
@@ -173,34 +149,109 @@ trait HasRoles
     }
 
     /**
-     * Get role ID by name.
-     */
-    protected function getRoleIdByName(string $roleName): ?int
-    {
-        return config('guard.models.role')::query()
-            ->where('name', $roleName)
-            ->first()?->id;
-    }
-
-    /**
-     * Resolve a role model from a string name or return the provided model.
-     */
-    protected function resolveRoleModel(Model|string $role, bool $throw = true): ?Model
-    {
-        if (! is_string($role)) {
-            return $role;
-        }
-
-        $query = config('guard.models.role')::query()->where('name', $role);
-
-        return $throw ? $query->firstOrFail() : $query->first();
-    }
-
-    /**
      * Scope a query to include models with specific roles.
      */
     protected function scopeWithRoles(Builder $query, string|array $roles): Builder
     {
         return $query->whereHas('roles', fn (Builder $q) => $q->whereIn('name', (array) $roles));
+    }
+
+    /**
+     * Get all permissions inherited through roles.
+     */
+    public function getPermissions(): Collection
+    {
+        return $this->getPermissionsViaRoles()
+            ->unique(fn (Model $permission) => $permission->getKey())
+            ->values();
+    }
+
+    /**
+     * Check if model has a permission by model or name.
+     */
+    public function hasPermission(Model|string $permission): bool
+    {
+        $name = is_string($permission)
+            ? $permission
+            : $permission->getAttribute('name');
+
+        if (! is_string($name)) {
+            return false;
+        }
+
+        $permissions = $this->getAllPermissionNames();
+
+        if ($permissions->contains($name)) {
+            return true;
+        }
+
+        if (! config('guard.wildcard.enabled', true)) {
+            return false;
+        }
+
+        return (bool) $this->matchesWildcardPermission($name, $permissions);
+    }
+
+    /**
+     * Get the permission names inherited through roles.
+     */
+    public function getPermissionNames(): array
+    {
+        return $this->getAllPermissionNames()->all();
+    }
+
+    /**
+     * Scope a query to include models with specific permissions.
+     */
+    protected function scopeWithPermissions(Builder $query, string|array $permissions): Builder
+    {
+        return $query->whereHas('roles.permissions', fn (Builder $q) => $q->whereIn('name', (array) $permissions));
+    }
+
+    /**
+     * Get all permission names for the model.
+     */
+    protected function getAllPermissionNames(): Collection
+    {
+        return $this->getPermissions()->pluck('name');
+    }
+
+    /**
+     * Check if a permission matches a wildcard permission.
+     */
+    protected function matchesWildcardPermission(string $permission, Collection $allPermissions): bool
+    {
+        $permissionParts = explode('.', $permission);
+
+        return $allPermissions->contains(function (string $perm) use ($permissionParts): bool {
+            if (! str_ends_with($perm, '*')) {
+                return false;
+            }
+
+            $wildcardParts = array_filter(explode('.', rtrim($perm, '*')));
+
+            foreach ($wildcardParts as $index => $part) {
+                if (! isset($permissionParts[$index]) || $permissionParts[$index] !== $part) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    /**
+     * Get permissions inherited through roles.
+     */
+    protected function getPermissionsViaRoles(): Collection
+    {
+        $roles = $this->roles()->with('permissions')->get();
+
+        return $roles
+            ->flatMap(function (Model $role): Collection {
+                $permissions = $role->getRelationValue('permissions');
+
+                return $permissions instanceof Collection ? $permissions : collect();
+            });
     }
 }

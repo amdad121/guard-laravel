@@ -6,8 +6,8 @@ namespace AmdadulHaq\Guard;
 
 use AmdadulHaq\Guard\Commands\CreatePermission;
 use AmdadulHaq\Guard\Commands\CreateRole;
-use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
-use AmdadulHaq\Guard\Contracts\User as UserContract;
+use AmdadulHaq\Guard\Commands\UpgradeCommand;
+use AmdadulHaq\Guard\Contracts\Roleable;
 use AmdadulHaq\Guard\Enums\CacheKey;
 use AmdadulHaq\Guard\Facades\Guard;
 use AmdadulHaq\Guard\Middleware\PermissionMiddleware;
@@ -35,8 +35,6 @@ class GuardServiceProvider extends ServiceProvider
             __DIR__.'/../config/guard.php',
             'guard'
         );
-
-        $this->app->bind(RolesContract::class, fn () => resolve(config('guard.models.role')));
     }
 
     /**
@@ -65,7 +63,7 @@ class GuardServiceProvider extends ServiceProvider
         $this->getPermissions()
             ->each(fn (Permission $permission) => Gate::define(
                 $permission->getName(),
-                fn (UserContract $user): bool => $user->hasPermission($permission->getName())
+                fn (Roleable $user): bool => $user->hasPermission($permission->getName())
             ));
     }
 
@@ -77,7 +75,7 @@ class GuardServiceProvider extends ServiceProvider
         $this->getRoles()
             ->each(fn (Role $role) => Gate::define(
                 $role->getName(),
-                fn (RolesContract $user): bool => $user->hasRole($role->getName())
+                fn (Roleable $user): bool => $user->hasRole($role->getName())
             ));
     }
 
@@ -98,7 +96,7 @@ class GuardServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/../database/migrations/create_roles_table.php.stub' => database_path('migrations/'.date('Y_m_d_His').'_create_roles_table.php'),
-            __DIR__.'/../database/migrations/create_permissions_table.php.stub' => database_path('migrations/'.date('Y_m_d_His').'_create_permissions_table.php'),
+            __DIR__.'/../database/migrations/create_permissions_table.php.stub' => database_path('migrations/'.date('Y_m_d_His', time() + 1).'_create_permissions_table.php'),
         ], 'guard-migrations');
     }
 
@@ -110,6 +108,7 @@ class GuardServiceProvider extends ServiceProvider
         $this->commands([
             CreateRole::class,
             CreatePermission::class,
+            UpgradeCommand::class,
         ]);
     }
 
@@ -154,14 +153,15 @@ class GuardServiceProvider extends ServiceProvider
      */
     protected function registerModelObservers(): void
     {
-        collect([
+        $models = [
             config('guard.models.role', Role::class),
             config('guard.models.permission', Permission::class),
-        ])
-            ->each(function (string $model): void {
-                $model::saved(fn () => Guard::clearCache());
-                $model::deleted(fn () => Guard::clearCache());
-            });
+        ];
+
+        foreach ($models as $model) {
+            $model::saved(fn () => Guard::clearCache());
+            $model::deleted(fn () => Guard::clearCache());
+        }
     }
 
     /**
@@ -181,8 +181,10 @@ class GuardServiceProvider extends ServiceProvider
      */
     protected function getPermissions(): Collection
     {
+        $permissionModel = config('guard.models.permission', Permission::class);
+
         if (! config('guard.cache.enabled', true)) {
-            return $this->permissionModel()::with('roles')->get();
+            return $permissionModel::with('roles')->get();
         }
 
         $cacheDuration = config('guard.cache.permissions_duration', 3600);
@@ -190,7 +192,7 @@ class GuardServiceProvider extends ServiceProvider
         return Cache::remember(
             CacheKey::PERMISSIONS->value,
             $cacheDuration,
-            fn () => $this->permissionModel()::with('roles')->get()
+            fn () => $permissionModel::with('roles')->get()
         );
     }
 
@@ -199,8 +201,10 @@ class GuardServiceProvider extends ServiceProvider
      */
     protected function getRoles(): Collection
     {
+        $roleModel = config('guard.models.role', Role::class);
+
         if (! config('guard.cache.enabled', true)) {
-            return $this->roleModel()::all();
+            return $roleModel::all();
         }
 
         $cacheDuration = config('guard.cache.roles_duration', 3600);
@@ -208,23 +212,7 @@ class GuardServiceProvider extends ServiceProvider
         return Cache::remember(
             CacheKey::ROLES->value,
             $cacheDuration,
-            fn () => $this->roleModel()::all()
+            fn () => $roleModel::all()
         );
-    }
-
-    /**
-     * Get the configured permission model class.
-     */
-    protected function permissionModel(): string
-    {
-        return config('guard.models.permission', Permission::class);
-    }
-
-    /**
-     * Get the configured role model class.
-     */
-    protected function roleModel(): string
-    {
-        return config('guard.models.role', Role::class);
     }
 }

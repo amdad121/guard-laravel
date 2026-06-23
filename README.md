@@ -30,41 +30,18 @@ php artisan migrate
 
 ### 3. Setup your User model
 
-Choose one setup:
-
-**Roles only**
-
 ```php
 <?php
 
 namespace App\Models;
 
-use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
-use AmdadulHaq\Guard\Concerns\HasRoles;
+use AmdadulHaq\Guard\Contracts\Roleable as RoleableContract;
+use AmdadulHaq\Guard\Concerns\Roleable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable implements RolesContract
+class User extends Authenticatable implements RoleableContract
 {
-    use HasRoles;
-}
-```
-
-**Roles + Permissions**
-
-```php
-<?php
-
-namespace App\Models;
-
-use AmdadulHaq\Guard\Contracts\User as UserContract;
-use AmdadulHaq\Guard\Concerns\HasRoles;
-use AmdadulHaq\Guard\Concerns\HasPermissions;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
-class User extends Authenticatable implements UserContract
-{
-    use HasRoles;
-    use HasPermissions;
+    use Roleable;
 }
 ```
 
@@ -155,41 +132,18 @@ Pivot table names are derived from model table names; the defaults shown above a
 
 ### Step 3: Configure User Model
 
-You can use the package in two ways.
-
-**Roles only**
-
 ```php
 <?php
 
 namespace App\Models;
 
-use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
-use AmdadulHaq\Guard\Concerns\HasRoles;
+use AmdadulHaq\Guard\Contracts\Roleable as RoleableContract;
+use AmdadulHaq\Guard\Concerns\Roleable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable implements RolesContract
+class User extends Authenticatable implements RoleableContract
 {
-    use HasRoles;
-}
-```
-
-**Roles + Permissions**
-
-```php
-<?php
-
-namespace App\Models;
-
-use AmdadulHaq\Guard\Contracts\User as UserContract;
-use AmdadulHaq\Guard\Concerns\HasRoles;
-use AmdadulHaq\Guard\Concerns\HasPermissions;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
-class User extends Authenticatable implements UserContract
-{
-    use HasRoles;
-    use HasPermissions;
+    use Roleable;
 }
 ```
 
@@ -234,37 +188,19 @@ return [
 
 ### User Setup
 
-Use one of these setups depending on what your app needs.
-
-**Roles only**
-
 ```php
-use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
-use AmdadulHaq\Guard\Concerns\HasRoles;
+use AmdadulHaq\Guard\Contracts\Roleable as RoleableContract;
+use AmdadulHaq\Guard\Concerns\Roleable;
 
-class User extends Authenticatable implements RolesContract
+class User extends Authenticatable implements RoleableContract
 {
-    use HasRoles;
-}
-```
-
-**Roles + Permissions**
-
-```php
-use AmdadulHaq\Guard\Contracts\User as UserContract;
-use AmdadulHaq\Guard\Concerns\HasRoles;
-use AmdadulHaq\Guard\Concerns\HasPermissions;
-
-class User extends Authenticatable implements UserContract
-{
-    use HasRoles;
-    use HasPermissions;
+    use Roleable;
 }
 ```
 
 Notes:
 
-- `HasPermissions` on the user model is for permission checks.
+- `Roleable` trait on the user model handles both role and permission checks.
 - Users do not receive permissions directly.
 - Assign permissions to roles, then users inherit them from those roles.
 
@@ -282,10 +218,10 @@ $adminRole = Role::create([
 ]);
 
 // Create via command
-// php artisan guard:create-role moderator "Moderator"
-// php artisan guard:create-role moderator "Moderator" 1
-// php artisan guard:create-role moderator "Moderator" user@example.com
-// php artisan guard:create-role moderator "Moderator" "Jane Doe"
+php artisan guard:create-role moderator "Moderator"
+php artisan guard:create-role moderator "Moderator" 1
+php artisan guard:create-role moderator "Moderator" user@example.com
+php artisan guard:create-role moderator "Moderator" "Jane Doe"
 ```
 
 **Role Model Methods:**
@@ -322,9 +258,9 @@ Permission::create([
 ]);
 
 // Create via command
-// php artisan guard:create-permission users.delete "Delete Users"
-// php artisan guard:create-permission users.delete "Delete Users" 1
-// php artisan guard:create-permission users.delete "Delete Users" admin
+php artisan guard:create-permission users.delete "Delete Users"
+php artisan guard:create-permission users.delete "Delete Users" 1
+php artisan guard:create-permission users.delete "Delete Users" admin
 ```
 
 **Permission Model Methods:**
@@ -634,7 +570,7 @@ Permission::query()->byGroup('users')->get();
 
 ### User Model (via Traits)
 
-**HasRoles trait provides:**
+**Roleable trait provides:**
 
 - `roles()` - BelongsToMany relationship
 - `assignRole(...$roles)` - Assign one or more roles
@@ -646,9 +582,6 @@ Permission::query()->byGroup('users')->get();
 - `hasRole($role)` - Check single role
 - `hasAllRoles(...$roles)` - Check all roles
 - `hasAnyRole(...$roles)` - Check any role
-
-**HasPermissions trait provides:**
-
 - `getPermissionNames()` - Get permission names inherited from roles
 - `hasPermission($permission)` - Check permission (by name or model)
 - `getPermissions()` - Get all permissions inherited from roles
@@ -694,10 +627,6 @@ Permission::query()->byGroup('users')->get();
 - `getGroup()` - Get resource group (e.g., 'users')
 - `getType()` - Get PermissionType enum
 - `roles()` - BelongsToMany to roles
-- `giveRoleTo(...$roles)` - Give one or more roles to permission
-- `syncRoles(array $roles)` - Sync roles
-- `revokeRole($role)` - Revoke role
-- `assignRole(...$roles)` - Alias for giveRoleTo
 
 **Scopes:**
 
@@ -708,20 +637,10 @@ Permission::query()->byGroup('users')->get();
 
 ```php
 use AmdadulHaq\Guard\Exceptions\PermissionDeniedException;
-use AmdadulHaq\Guard\Exceptions\RoleDoesNotExistException;
-use AmdadulHaq\Guard\Exceptions\PermissionDoesNotExistException;
 
-// Permission denied
+// Thrown when user lacks required permission/role
 throw PermissionDeniedException::create('users.delete');
 throw PermissionDeniedException::roleNotAssigned('administrator');
-
-// Role not found
-throw RoleDoesNotExistException::named('admin');
-throw RoleDoesNotExistException::withId(123);
-
-// Permission not found
-throw PermissionDoesNotExistException::named('users.delete');
-throw PermissionDoesNotExistException::withId(456);
 ```
 
 ## 💾 Caching
@@ -862,7 +781,7 @@ composer test-coverage
 
 ### Common Issues
 
-**Issue: `Class 'AmdadulHaq\Guard\Concerns\HasRoles' not found`**
+**Issue: `Class 'AmdadulHaq\Guard\Concerns\Roleable' not found`**
 
 Solution:
 

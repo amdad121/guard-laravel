@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Models;
 
-use AmdadulHaq\Guard\Concerns\HasRoles;
-use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
+use AmdadulHaq\Guard\Concerns\HasGuardHelpers;
 use AmdadulHaq\Guard\Enums\PermissionType;
 use AmdadulHaq\Guard\Facades\Guard;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,9 +19,9 @@ use Illuminate\Support\Arr;
  * @property string|null $group
  * @property bool $is_wildcard
  */
-class Permission extends Model implements RolesContract
+class Permission extends Model
 {
-    use HasRoles;
+    use HasGuardHelpers;
 
     protected $guarded = [];
 
@@ -35,7 +34,7 @@ class Permission extends Model implements RolesContract
     }
 
     /**
-     * Get the permission label.
+     * Get the attributes that should be cast.
      */
     protected function casts(): array
     {
@@ -134,33 +133,5 @@ class Permission extends Model implements RolesContract
     protected function scopeByGroup(Builder $query, string $group): Builder
     {
         return $query->where('name', 'like', $group.'.%');
-    }
-
-    /**
-     * Get permission names - a permission only has itself.
-     */
-    public function getPermissionNames(): array
-    {
-        return [$this->name];
-    }
-
-    /**
-     * Give role to the permission.
-     */
-    public function giveRoleTo(Model|string|int|array ...$roles): Model
-    {
-        return $this->assignRole(...$roles);
-    }
-
-    /**
-     * Clear cached permissions/roles if caching is enabled.
-     */
-    protected function clearGuardCache(): void
-    {
-        if (! config('guard.cache.enabled', true)) {
-            return;
-        }
-
-        Guard::clearCache();
     }
 }

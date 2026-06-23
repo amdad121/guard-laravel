@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Contracts\Console\PromptsForMissingInput;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-use function Laravel\Prompts\text;
-
-class CreatePermission extends Command implements PromptsForMissingInput
+class CreatePermission extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -29,44 +24,22 @@ class CreatePermission extends Command implements PromptsForMissingInput
     public function handle(): int
     {
         $name = $this->argument('name');
-
-        if (! $name) {
-            $name = text(
-                label: 'The name of the permission',
-                required: true
-            );
-        }
-
         $label = $this->argument('label');
-
-        if (! $label) {
-            $label = text(
-                label: 'The name of the label',
-                required: false
-            );
-        }
-
         $roleIdentifier = $this->argument('role');
 
-        if (! $roleIdentifier) {
-            $roleIdentifier = text(
-                label: 'ID or name of the role',
-                required: false
-            );
-        }
-
-        $permissionModel = $this->resolvePermissionModel();
+        $permissionModel = $this->resolveModel('permission');
         $permission = $permissionModel::query()->firstOrCreate(['name' => $name], ['name' => $name, 'label' => $label]);
 
         $message = '';
 
         if ($roleIdentifier) {
-            $role = $this->findRole($roleIdentifier);
+            $roleModel = $this->resolveModel('role');
+            $role = $this->findByIdentifier($roleModel, $roleIdentifier, ['name']);
 
             if ($role instanceof Model) {
                 if (method_exists($role, 'givePermissionTo')) {
                     $role->givePermissionTo($permission);
-                    $message = 'Permission give to the role ID of #'.$role->getKey().'.';
+                    $message = 'Permission given to the role ID of #'.$role->getKey().'.';
                 } else {
                     $this->error('Role model must support permission management.');
                     $this->newLine();
@@ -88,34 +61,9 @@ class CreatePermission extends Command implements PromptsForMissingInput
             return self::SUCCESS;
         }
 
-        $this->info('Permission already exist. ID of the permission is #'.$permission->getKey().'. '.$message);
+        $this->info('Permission already exists. ID of the permission is #'.$permission->getKey().'. '.$message);
         $this->newLine();
 
         return self::SUCCESS;
-    }
-
-    protected function resolvePermissionModel(): Model
-    {
-        return resolve(config('guard.models.permission'));
-    }
-
-    protected function resolveRoleModel(): Model
-    {
-        return resolve(config('guard.models.role'));
-    }
-
-    protected function findRole(string $identifier): ?Model
-    {
-        $roleModel = $this->resolveRoleModel();
-
-        return $roleModel::query()
-            ->where(function (Builder $query) use ($identifier, $roleModel): void {
-                if (is_numeric($identifier)) {
-                    $query->where($roleModel->getKeyName(), (int) $identifier);
-                }
-
-                $query->orWhere('name', $identifier);
-            })
-            ->first();
     }
 }

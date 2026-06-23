@@ -1,10 +1,12 @@
 # Upgrade Guide
 
-Current Version: **v1.4.0**
+Current Version: **v2.0.0**
 
 ## Quick Upgrade
 
-### Upgrading to v1.4.0 (Latest)
+### Upgrading to v2.0.0 (Latest)
+
+The `v2.0.0` release introduces strict architectural optimizations and removes all legacy backward compatibility layers.
 
 1. **Update the package**
 
@@ -12,7 +14,56 @@ Current Version: **v1.4.0**
     composer update amdadulhaq/guard-laravel
     ```
 
-2. **Clear cache**
+2. **Run the Automatic Upgrade Command (Recommended)**
+
+    We have provided an Artisan command to automatically refactor your application's models (`app/Models`) to the new architecture. Run:
+
+    ```bash
+    php artisan guard:upgrade
+    ```
+
+3. **Or Apply Manually (If not using the command)**
+
+    The `HasPermissions` trait and `Roles` contract were merged into the `Roleable` trait and the `Roleable` contract respectively. 
+    You should:
+    - Remove `use HasPermissions;` and its import from your `User` model.
+    - Change implementation of `Roles` contract to the unified `Roleable` contract (aliased as `RoleableContract`).
+    - Change use of `HasRoles` trait to `Roleable` trait.
+
+    ```diff
+    - use AmdadulHaq\Guard\Concerns\HasPermissions;
+    - use AmdadulHaq\Guard\Concerns\HasRoles;
+    + use AmdadulHaq\Guard\Concerns\Roleable;
+    - use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
+    + use AmdadulHaq\Guard\Contracts\Roleable as RoleableContract;
+
+    - class User extends Authenticatable implements RolesContract
+    + class User extends Authenticatable implements RoleableContract
+      {
+    -     use HasPermissions;
+    -     use HasRoles;
+    +     use Roleable;
+      }
+    ```
+
+    Also note: The return type for `assignRole()` in the `Roleable` contract was updated from `Model` to `self` to support fluent chaining. Ensure your implementations match this if you have heavily customized the trait.
+
+2. **Removed Exceptions**
+
+    To simplify error handling, the following redundant exception classes have been removed:
+    - `GuardException`
+    - `RoleDoesNotExistException`
+    - `PermissionDoesNotExistException`
+
+    **Action:** If you were catching `RoleDoesNotExistException` or `PermissionDoesNotExistException`, update your code to catch standard Eloquent `ModelNotFoundException` where applicable. For authorization checks, continue catching `PermissionDeniedException`.
+
+3. **Console Commands Changes**
+
+    Manual prompt fallbacks for missing arguments in artisan commands (`guard:create-role` and `guard:create-permission`) have been removed. The commands now strictly rely on Laravel's native `PromptsForMissingInput`. If you are programmatically calling these commands via tests or code without all required arguments, ensure you provide them directly or update your test expectations.
+
+5. **Clear Caches**
+
+    After making code changes, clear your application caches:
 
     ```bash
     php artisan cache:clear
@@ -20,11 +71,7 @@ Current Version: **v1.4.0**
     php artisan view:clear
     ```
 
-3. **Review release-specific changes**
 
-    If you're already on `v1.3.x`, `v1.4.0` is a documentation-only release and does not require application code changes.
-
-    If you're upgrading from `v1.2.x` or earlier, review the `v1.2.1` Blade directives and `v1.3.0` Laravel 13 support updates below.
 
 ### Upgrading to v1.3.0
 
@@ -38,6 +85,8 @@ Current Version: **v1.4.0**
 
     `v1.3.0` adds Laravel 13 support. No package API changes are required, but confirm your application and dependency set are compatible before upgrading.
 
+---
+
 ### Upgrading to v1.2.1
 
 1. **Update the package**
@@ -48,7 +97,7 @@ Current Version: **v1.4.0**
 
 2. **New Feature: Blade Directives** (Optional)
 
-    `v1.2.1` introduces custom Blade directives for role checking. No code changes are required; they are automatically available:
+    `v1.2.1` introduced custom Blade directives for role checking. No code changes are required; they are automatically available:
 
     ```blade
     @role('administrator')
@@ -59,6 +108,8 @@ Current Version: **v1.4.0**
         <div>Admin or Editor content</div>
     @endhasanyrole
     ```
+
+---
 
 ### Upgrading from v1.2.x to v1.3.0+
 
@@ -95,37 +146,18 @@ Current Version: **v1.4.0**
     php artisan route:clear
     ```
 
-## Breaking Changes
+## Breaking Changes v1.x
 
 ### Contracts Renamed
-
 - `HasRoles` contract → now called **`Roles`**
 - `User` remains the user-side contract for permission checks
 - `Permissions` is the direct permission-management contract for role-like models
-- Old import: `use AmdadulHaq\Guard\HasRoles;`
-- New import: `use AmdadulHaq\Guard\Concerns\HasRoles;`
 
 ### Traits Moved to Concerns Directory
-
 - All traits moved from `src/` to `src/Concerns/` directory
-- `HasRoles` trait moved to `src/Concerns/HasRoles.php`
-- `HasPermissions` trait moved to `src/Concerns/HasPermissions.php`
-- Old import: `use AmdadulHaq\Guard\HasRoles;`
-- New import: `use AmdadulHaq\Guard\Concerns\HasRoles;`
 
 ### Middleware Support for Multiple Roles/Permissions
-
 All middlewares now support multiple roles/permissions via variadic parameters:
-
-**Old usage:**
-
-```php
-Route::middleware('role:admin')->group(function () {
-    // ...
-});
-```
-
-**New usage:**
 
 ```php
 // Single role
@@ -155,127 +187,6 @@ Methods that accept roles or permissions now support model instances, names, and
 - `revokePermissionTo()` - Now accepts `Model|string`
 - `syncRoles()` - Now accepts `array<int, int|string>`
 - `syncPermissions()` - Now accepts `array<int, int|string>`
-
-## Migration Guide
-
-### Step 1: Update User Model Imports
-
-**Roles only:**
-
-```php
-use AmdadulHaq\Guard\HasRoles;
-use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
-
-class User extends Authenticatable implements RolesContract
-{
-    use HasRoles;
-}
-```
-
-**Roles + Permissions:**
-
-```php
-use AmdadulHaq\Guard\Concerns\HasRoles;
-use AmdadulHaq\Guard\Concerns\HasPermissions;
-use AmdadulHaq\Guard\Contracts\User as UserContract;
-
-class User extends Authenticatable implements UserContract
-{
-    use HasRoles;
-    use HasPermissions;
-}
-```
-
-### Step 2: Update Middleware Usage (Optional)
-
-If you're using multiple roles in middleware, update to comma-separated format:
-
-**Old code:**
-
-```php
-Route::middleware(['role:admin', 'role:editor'])->group(function () {
-    // ...
-});
-```
-
-**New code:**
-
-```php
-Route::middleware('role:admin,editor')->group(function () {
-    // ...
-});
-```
-
-### Step 3: Update Config (Optional)
-
-If you're using custom role or permission model classes, update your config:
-
-```php
-'models' => [
-    'user' => \App\Models\User::class,
-    'role' => \App\Models\CustomRole::class, // Update if needed
-    'permission' => \App\Models\CustomPermission::class, // Update if needed
-],
-```
-
-### Step 4: Verify Installation
-
-Run tests to ensure everything works:
-
-```bash
-composer test
-```
-
-## Method Signature Changes
-
-### All Methods That Accept Models
-
-All methods now accept model instances, names, and where documented IDs:
-
-| Method                 | Old Signature                           | New Signature                                               |
-| ---------------------- | --------------------------------------- | ----------------------------------------------------------- |
-| `assignRole()`         | `assignRole(Model $role)`               | `assignRole(Model\|string\|int\|array ...$roles)`           |
-| `revokeRole()`         | `revokeRole(Model $role)`               | `revokeRole(Model\|string $role)`                           |
-| `givePermissionTo()`   | `givePermissionTo(Model $permission)`   | `givePermissionTo(Model\|string\|int\|array ...$permissions)` |
-| `revokePermissionTo()` | `revokePermissionTo(Model $permission)` | `revokePermissionTo(Model\|string $permission)`             |
-| `syncRoles()`          | `syncRoles(array $roleIds)`             | `syncRoles(array $roles)` supports IDs or names             |
-| `syncPermissions()`    | `syncPermissions(array $permissionIds)` | `syncPermissions(array $permissions)` supports IDs or names |
-
-### Returns Type Updates
-
-Some methods now return self for fluent chaining:
-
-| Method               | Old Return | New Return |
-| -------------------- | ---------- | ---------- |
-| `assignRole()`       | `Model`    | `self`     |
-| `givePermissionTo()` | `Model`    | `Model`    |
-| `syncRoles()`        | `array`    | `array`    |
-| `syncPermissions()`  | `array`    | `array`    |
-
-## Full Feature List
-
-All existing functionality is preserved:
-
-- ✅ Role & Permission Management
-- ✅ Wildcard Permissions
-- ✅ Permission Groups
-- ✅ Guarded Roles
-- ✅ Custom Middleware (with multiple support)
-- ✅ **Custom Blade Directives (NEW in v1.2.1)**
-    - `@role('admin')` - Check single role
-    - `@hasrole('admin')` - Alternative syntax
-    - `@hasanyrole(['admin', 'editor'])` - Check any role
-    - `@hasallroles(['admin', 'editor'])` - Check all roles
-- ✅ Cache Support
-- ✅ Query Scopes
-- ✅ Custom Exceptions
-- ✅ Enums
-- ✅ Developer Tools
-- ✅ Roles-only usage or roles plus permissions
-
-## That's It!
-
-Your application should work immediately after these steps. All existing functionality remains intact.
 
 ## Need Help?
 

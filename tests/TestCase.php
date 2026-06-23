@@ -23,7 +23,9 @@ class TestCase extends Orchestra
         config()->set('database.default', 'testing');
         config()->set('guard.models.user', User::class);
 
-        $app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->create('users', function ($table): void {
+        $schema = $app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder();
+
+        $schema->create('users', function ($table): void {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
@@ -33,7 +35,7 @@ class TestCase extends Orchestra
             $table->timestamps();
         });
 
-        $app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->create('roles', function ($table): void {
+        $schema->create('roles', function ($table): void {
             $table->id();
             $table->string('name')->unique();
             $table->string('label')->nullable();
@@ -42,7 +44,7 @@ class TestCase extends Orchestra
             $table->timestamps();
         });
 
-        $app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->create('permissions', function ($table): void {
+        $schema->create('permissions', function ($table): void {
             $table->id();
             $table->string('name')->unique();
             $table->string('label')->nullable();
@@ -52,13 +54,13 @@ class TestCase extends Orchestra
             $table->timestamps();
         });
 
-        $app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->create('permission_role', function ($table): void {
+        $schema->create('permission_role', function ($table): void {
             $table->foreignId('permission_id')->constrained('permissions')->cascadeOnDelete();
             $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
             $table->primary(['permission_id', 'role_id']);
         });
 
-        $app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->create('role_user', function ($table): void {
+        $schema->create('role_user', function ($table): void {
             $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->primary(['role_id', 'user_id']);
@@ -67,11 +69,12 @@ class TestCase extends Orchestra
 
     protected function tearDown(): void
     {
-        $this->app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->dropIfExists('role_user');
-        $this->app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->dropIfExists('permission_role');
-        $this->app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->dropIfExists('permissions');
-        $this->app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->dropIfExists('roles');
-        $this->app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder()->dropIfExists('users');
+        $schema = $this->app->make(ConnectionResolverInterface::class)->connection()->getSchemaBuilder();
+        $schema->dropIfExists('role_user');
+        $schema->dropIfExists('permission_role');
+        $schema->dropIfExists('permissions');
+        $schema->dropIfExists('roles');
+        $schema->dropIfExists('users');
 
         parent::tearDown();
     }

@@ -10,9 +10,7 @@ it('creates a role via the artisan command', function (): void {
     $this->artisan('guard:create-role', [
         'name' => 'moderator',
         'label' => 'Moderator',
-    ])
-        ->expectsQuestion('ID, email, or name of the user', '')
-        ->assertSuccessful();
+    ])->assertSuccessful();
 
     expect(Role::query()->where('name', 'moderator')->first())
         ->not->toBeNull()
@@ -49,9 +47,7 @@ it('creates a permission via the artisan command', function (): void {
     $this->artisan('guard:create-permission', [
         'name' => 'posts.publish',
         'label' => 'Publish Posts',
-    ])
-        ->expectsQuestion('ID or name of the role', '')
-        ->assertSuccessful();
+    ])->assertSuccessful();
 
     expect(Permission::query()->where('name', 'posts.publish')->first())
         ->not->toBeNull()

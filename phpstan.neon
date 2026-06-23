@@ -9,3 +9,7 @@ parameters:
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: false
+    ignoreErrors:
+        -
+            message: '#Trait AmdadulHaq\\Guard\\Concerns\\Roleable is used zero times and is not analysed\.#'
+            path: src/Concerns/Roleable.php

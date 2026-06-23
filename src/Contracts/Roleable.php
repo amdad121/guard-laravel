@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 
 /**
- * Contract for entities that have and can manage roles.
+ * Contract for models that use Guard with role and permission checks.
  */
-interface Roles
+interface Roleable
 {
     /**
      * Get the roles associated with the entity.
@@ -26,7 +26,7 @@ interface Roles
     /**
      * Assign a role to the entity.
      */
-    public function assignRole(Model|string|int|array ...$roles): Model;
+    public function assignRole(Model|string|int|array ...$roles): self;
 
     /**
      * Sync roles to the entity.
@@ -52,4 +52,19 @@ interface Roles
      * Check if the entity has any of the specified roles.
      */
     public function hasAnyRole(string|array|Collection ...$roles): bool;
+
+    /**
+     * Get all permissions inherited through roles.
+     */
+    public function getPermissions(): Collection;
+
+    /**
+     * Get all inherited permission names.
+     */
+    public function getPermissionNames(): array;
+
+    /**
+     * Check if the user has a specific permission through roles.
+     */
+    public function hasPermission(Model|string $permission): bool;
 }

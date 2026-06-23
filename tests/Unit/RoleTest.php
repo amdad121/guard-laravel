@@ -90,6 +90,16 @@ it('can revoke permission from role', function (): void {
         ->toHaveCount(0);
 });
 
+it('can revoke all permissions from role', function (): void {
+    $permission2 = Permission::query()->create(['name' => 'users.update', 'label' => 'Update']);
+    $this->role->givePermissionTo($this->permission, $permission2);
+    expect($this->role->permissions)->toHaveCount(2);
+
+    $this->role->revokeAllPermissions();
+
+    expect($this->role->fresh()->permissions)->toHaveCount(0);
+});
+
 it('throws exception when role does not exist', function (): void {
     Role::query()->where('name', 'non-existent')->firstOrFail();
 })->throws(ModelNotFoundException::class);

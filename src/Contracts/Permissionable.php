@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * Contract for entities that have and can manage permissions.
  */
-interface Permissions
+interface Permissionable
 {
     /**
      * Get the permissions associated with the entity.

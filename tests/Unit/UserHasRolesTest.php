@@ -66,6 +66,28 @@ it('can revoke role from user', function (): void {
         ->toHaveCount(0);
 });
 
+it('can revoke all roles from user', function (): void {
+    $role2 = Role::query()->create(['name' => 'editor']);
+    $this->user->assignRole($this->role, $role2);
+    expect($this->user->roles)->toHaveCount(2);
+
+    $this->user->revokeRoles();
+
+    expect($this->user->fresh()->roles)->toHaveCount(0);
+});
+
+it('can sync roles without detaching', function (): void {
+    $this->user->assignRole($this->role);
+
+    $role2 = Role::query()->create(['name' => 'editor']);
+    $this->user->syncRolesWithoutDetaching([$role2->id]);
+
+    expect($this->user->fresh()->roles)
+        ->toHaveCount(2)
+        ->pluck('name')->sort()->values()->toArray()
+        ->toEqual(['admin', 'editor']);
+});
+
 it('can check if user has role', function (): void {
     $this->user->assignRole($this->role);
 

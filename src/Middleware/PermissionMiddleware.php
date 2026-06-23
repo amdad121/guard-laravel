@@ -4,32 +4,25 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Middleware;
 
-use AmdadulHaq\Guard\Contracts\User as UserContract;
+use AmdadulHaq\Guard\Concerns\ParsesMiddlewareParameters;
+use AmdadulHaq\Guard\Contracts\Roleable;
 use AmdadulHaq\Guard\Exceptions\PermissionDeniedException;
 use Closure;
 use Illuminate\Http\Request;
 
 class PermissionMiddleware
 {
+    use ParsesMiddlewareParameters;
+
     public function handle(Request $request, Closure $next, string ...$permissions): mixed
     {
         $user = $request->user();
 
-        abort_unless($user instanceof UserContract, 403, 'Unauthenticated.');
+        abort_unless($user instanceof Roleable, 403, 'Unauthenticated.');
 
-        // Flatten permissions array (handles both 'users.create,users.edit' and 'users.create', 'users.edit' formats)
-        $flattenedPermissions = collect($permissions)->flatMap(fn ($permission): array => explode(',', $permission))->all();
+        $flattenedPermissions = $this->parseParameters($permissions);
 
-        // Check if user has ANY of the provided permissions
-        $hasAnyPermission = false;
-        foreach ($flattenedPermissions as $permission) {
-            if ($user->hasPermission($permission)) {
-                $hasAnyPermission = true;
-                break;
-            }
-        }
-
-        if (! $hasAnyPermission) {
+        if (! collect($flattenedPermissions)->contains(fn ($p) => $user->hasPermission($p))) {
             throw PermissionDeniedException::create(implode(', ', $flattenedPermissions));
         }
 

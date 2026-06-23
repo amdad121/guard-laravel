@@ -27,26 +27,18 @@ class Guard
     }
 
     /**
-     * Sort an array of strings.
-     */
-    public function getSortPivotTable(array $array): array
-    {
-        return collect($array)
-            ->sort()
-            ->values()
-            ->all();
-    }
-
-    /**
      * Get pivot table name for a given array of models.
      */
     public function getPivotTableName(array $array): string
     {
-        return collect($array)
-            ->map(fn (string $value): string => $this->getSingularName($this->getTableName($value)))
-            ->sort()
-            ->values()
-            ->implode('_');
+        $names = array_map(
+            fn (string $value): string => $this->getSingularName($this->getTableName($value)),
+            $array
+        );
+
+        sort($names);
+
+        return implode('_', $names);
     }
 
     /**

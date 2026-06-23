@@ -2,6 +2,23 @@
 
 All notable changes to `guard-laravel` will be documented in this file.
 
+## v2.0.0 - 2026-06-23
+
+### 🔨 Breaking Changes
+
+- **Unified Traits**: Merged the `HasPermissions` trait logic directly into the `Roleable` trait (formerly `HasRoles`). Developers must now use `Roleable` trait and remove `HasPermissions`.
+- **Contract Consolidation**: Deleted the legacy `Roles` and `Permissions` contracts, and consolidated the methods into single, generic `Roleable` and `Permissionable` contracts to ensure Interface Segregation compliance. User model must now use `Roleable as RoleableContract` if using the `Roleable` trait.
+- **Removed Exceptions**: Removed `GuardException`, `RoleDoesNotExistException`, and `PermissionDoesNotExistException` in favor of standard Eloquent exceptions (`ModelNotFoundException`) and `PermissionDeniedException`.
+- **Commands Simplification**: Removed interactive fallback prompts (`laravel/prompts`) from `guard:create-role` and `guard:create-permission`. Commands now rely strictly on Laravel's native `PromptsForMissingInput` interface.
+
+### ✨ New Features & Improvements
+
+- **Testing Expansion**: Added tests for `syncRolesWithoutDetaching`, `revokeRoles`, and `revokeAllPermissions` to ensure 100% feature coverage.
+- **Role Model cleanup**: Removed unused and redundant `HasPermissions` trait usage from the `Role` model.
+- **Documentation**: Simplified setup and installation instructions in `README.md` and completely rewrote the `UPGRADE.md` guide with full historical migration paths.
+
+---
+
 ## v1.4.0 - 2026-03-22
 
 ### 📚 Documentation

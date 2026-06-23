@@ -42,23 +42,14 @@ it('authorizes roles through Laravel Gate', function (): void {
 });
 
 it('renders custom blade role directives', function (): void {
-    $this->be($this->user);
+    $this->user->assignRole($this->role);
 
-    $html = Blade::render(
-        <<<'BLADE'
-        @role('admin')
-        <span>admin</span>
-        @endrole
-        @hasrole('editor')
-        <span>editor</span>
-        @endhasrole
-        BLADE,
-        [],
-        deleteCachedView: true
-    );
+    $this->actingAs($this->user);
 
-    expect($html)->toContain('admin')
-        ->not->toContain('editor');
+    expect(Blade::render("@role('admin') true @endrole"))->toBe('true ')
+        ->and(Blade::render("@role('editor') true @endrole"))->toBe('')
+        ->and(Blade::render("@hasrole('admin') true @endhasrole"))->toBe('true ')
+        ->and(Blade::render("@hasrole('editor') true @endhasrole"))->toBe('');
 });
 
 it('renders custom blade multiple-role directives', function (): void {

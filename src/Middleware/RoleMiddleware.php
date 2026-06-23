@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Middleware;
 
-use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
+use AmdadulHaq\Guard\Concerns\ParsesMiddlewareParameters;
+use AmdadulHaq\Guard\Contracts\Roleable;
 use AmdadulHaq\Guard\Exceptions\PermissionDeniedException;
 use Closure;
 use Illuminate\Http\Request;
 
 class RoleMiddleware
 {
+    use ParsesMiddlewareParameters;
+
     public function handle(Request $request, Closure $next, string ...$roles): mixed
     {
         $user = $request->user();
 
-        abort_unless($user instanceof RolesContract, 403, 'Unauthenticated.');
+        abort_unless($user instanceof Roleable, 403, 'Unauthenticated.');
 
-        // Flatten roles array (handles both 'admin,editor' and 'admin', 'editor' formats)
-        $flattenedRoles = collect($roles)->flatMap(fn ($role): array => explode(',', $role))->all();
+        $flattenedRoles = $this->parseParameters($roles);
 
         if (! $user->hasAnyRole(...$flattenedRoles)) {
             throw PermissionDeniedException::roleNotAssigned(implode(', ', $flattenedRoles));

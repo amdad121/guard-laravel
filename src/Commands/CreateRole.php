@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace AmdadulHaq\Guard\Commands;
 
-use AmdadulHaq\Guard\Contracts\Roles as RolesContract;
-use Illuminate\Console\Command;
-use Illuminate\Contracts\Console\PromptsForMissingInput;
-use Illuminate\Database\Eloquent\Builder;
+use AmdadulHaq\Guard\Contracts\Roleable;
 use Illuminate\Database\Eloquent\Model;
 
-use function Laravel\Prompts\text;
-
-class CreateRole extends Command implements PromptsForMissingInput
+class CreateRole extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -30,46 +25,24 @@ class CreateRole extends Command implements PromptsForMissingInput
     public function handle(): int
     {
         $name = $this->argument('name');
-
-        if (! $name) {
-            $name = text(
-                label: 'The name of the role',
-                required: true
-            );
-        }
-
         $label = $this->argument('label');
-
-        if (! $label) {
-            $label = text(
-                label: 'The name of the label',
-                required: false
-            );
-        }
-
         $userIdentifier = $this->argument('user');
 
-        if (! $userIdentifier) {
-            $userIdentifier = text(
-                label: 'ID, email, or name of the user',
-                required: false
-            );
-        }
-
-        $roleModel = $this->resolveRoleModel();
+        $roleModel = $this->resolveModel('role');
         $role = $roleModel::query()->firstOrCreate(['name' => $name], ['name' => $name, 'label' => $label]);
 
         $message = '';
 
         if ($userIdentifier) {
-            $user = $this->findUser($userIdentifier);
+            $userModel = $this->resolveModel('user');
+            $user = $this->findByIdentifier($userModel, $userIdentifier, ['email', 'name']);
 
             if ($user instanceof Model) {
-                if ($user instanceof RolesContract) {
+                if ($user instanceof Roleable) {
                     $user->assignRole($role);
-                    $message = 'Assign to the user ID of #'.$user->getKey().'.';
+                    $message = 'Assigned to the user ID of #'.$user->getKey().'.';
                 } else {
-                    $this->error('User model must implement Roles contract.');
+                    $this->error('User model must implement Roleable contract.');
                     $this->newLine();
 
                     return self::INVALID;
@@ -89,35 +62,9 @@ class CreateRole extends Command implements PromptsForMissingInput
             return self::SUCCESS;
         }
 
-        $this->info('Role already exist. ID of the role is #'.$role->getKey().'. '.$message);
+        $this->info('Role already exists. ID of the role is #'.$role->getKey().'. '.$message);
         $this->newLine();
 
         return self::SUCCESS;
-    }
-
-    protected function resolveUserModel(): Model
-    {
-        return resolve(config('guard.models.user'));
-    }
-
-    protected function resolveRoleModel(): Model
-    {
-        return resolve(config('guard.models.role'));
-    }
-
-    protected function findUser(string $identifier): ?Model
-    {
-        $userModel = $this->resolveUserModel();
-
-        return $userModel::query()
-            ->where(function (Builder $query) use ($identifier, $userModel): void {
-                if (is_numeric($identifier)) {
-                    $query->where($userModel->getKeyName(), (int) $identifier);
-                }
-
-                $query->orWhere('email', $identifier)
-                    ->orWhere('name', $identifier);
-            })
-            ->first();
     }
 }
