@@ -6,42 +6,29 @@ use AmdadulHaq\Guard\Models\Permission;
 use AmdadulHaq\Guard\Models\Role;
 
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Guard Package Configuration
-    |--------------------------------------------------------------------------
-    |
-    | This file contains the configuration options for the Guard package,
-    | which provides role and permission management for Laravel applications.
-    |
-    | All configuration values have sensible defaults, but you can override
-    | them in your .env file for environment-specific settings.
-    |
-    */
 
     /*
     |--------------------------------------------------------------------------
-    | Guard Models
+    | Models
     |--------------------------------------------------------------------------
     |
-    | Define the fully qualified class names for the models used by the
-    | Guard package. You can extend or override the default models.
+    | Fully qualified class names for the models used by Guard. You can
+    | extend or replace the default Role and Permission models here.
     |
     */
 
     'models' => [
-        'user' => 'App\Models\User',
+        'user' => 'App\\Models\\User',
         'role' => Role::class,
         'permission' => Permission::class,
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Guard Tables
+    | Tables
     |--------------------------------------------------------------------------
     |
-    | Configure the database table names for the roles and permissions
-    | system. You can customize these if you prefer different table names.
+    | Database table names for the roles and permissions system.
     |
     */
 
@@ -52,11 +39,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cache Configuration
+    | Cache
     |--------------------------------------------------------------------------
     |
-    | Enable caching to improve performance when checking permissions and roles.
     | Cache is cleared automatically when roles or permissions are updated.
+    | Durations are in seconds.
     |
     */
 
@@ -68,11 +55,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Middleware Configuration
+    | Middleware
     |--------------------------------------------------------------------------
     |
-    | Configure the middleware aliases that will be registered by the package.
-    | These aliases can be used in your route definitions.
+    | Middleware aliases registered by Guard for use in route definitions.
     |
     */
 
@@ -87,11 +73,8 @@ return [
     | Wildcard Permissions
     |--------------------------------------------------------------------------
     |
-    | Enable wildcard permissions that allow checking permissions by prefix.
-    | For example, if you have 'user.update' and 'user.delete', a wildcard
-    | permission of 'user.*' will match both.
-    |
-    | Format: 'resource.action' where 'action' can be the asterisk wildcard '*'.
+    | When enabled, a wildcard permission such as 'user.*' will match any
+    | permission with the 'user.' prefix (e.g. 'user.update', 'user.delete').
     |
     */
 

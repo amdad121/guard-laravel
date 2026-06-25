@@ -24,6 +24,9 @@ class Role extends Model implements PermissionableContract
 
     protected $guarded = [];
 
+    /**
+     * Get the attributes that should be cast.
+     */
     protected function casts(): array
     {
         return [
@@ -31,6 +34,9 @@ class Role extends Model implements PermissionableContract
         ];
     }
 
+    /**
+     * Get the role name.
+     */
     public function getName(): string
     {
         return $this->name;
@@ -158,6 +164,9 @@ class Role extends Model implements PermissionableContract
         return $query->where('is_guarded', true);
     }
 
+    /**
+     * Scope a query to only include unguarded roles.
+     */
     protected function scopeUnguarded(Builder $query): Builder
     {
         return $query->where('is_guarded', false);

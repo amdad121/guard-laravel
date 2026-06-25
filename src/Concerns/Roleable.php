@@ -130,11 +130,17 @@ trait Roleable
             ->isNotEmpty();
     }
 
+    /**
+     * Get the names of all currently assigned roles.
+     */
     protected function getAssignedRoleNames(): Collection
     {
         return $this->roles->pluck('name');
     }
 
+    /**
+     * Normalize a mixed role input into a flat Collection of name strings.
+     */
     protected function normalizeRoleNames(string|array|Collection $roles): Collection
     {
         if (is_string($roles)) {

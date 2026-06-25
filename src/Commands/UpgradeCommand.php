@@ -46,8 +46,7 @@ class UpgradeCommand extends Command
             $content = File::get($file->getRealPath());
             $originalContent = $content;
 
-            // 1. Update Traits
-            // V1 legacy paths
+            // Update trait import paths from V1 and V2 pre-release to current
             $content = preg_replace(
                 '/use\s+AmdadulHaq\\\\Guard\\\\HasRoles\s*;/',
                 'use AmdadulHaq\Guard\Concerns\Roleable;',
@@ -55,23 +54,21 @@ class UpgradeCommand extends Command
             );
             $content = preg_replace('/use\s+AmdadulHaq\\\\Guard\\\\HasPermissions\s*;\r?\n?/', '', $content);
 
-            // V2 pre-release paths (if they exist)
             $content = preg_replace(
                 '/use\s+AmdadulHaq\\\\Guard\\\\Concerns\\\\HasRoles\s*;/',
                 'use AmdadulHaq\Guard\Concerns\Roleable;',
                 $content
             );
 
-            // Remove HasPermissions trait usage entirely
+            // HasPermissions is merged into Roleable; remove its import and trait use
             $content = preg_replace('/use\s+AmdadulHaq\\\\Guard\\\\Concerns\\\\HasPermissions\s*;\r?\n?/', '', $content);
 
-            // Replace actual trait uses inside the class
             $content = preg_replace('/use\s+HasRoles\s*;\r?\n?/', "use Roleable;\n", $content);
             $content = preg_replace('/use\s+HasPermissions\s*;\r?\n?/', '', $content);
             $content = preg_replace('/use\s+HasPermissions\s*,\s*HasRoles\s*;\r?\n?/', "use Roleable;\n", $content);
             $content = preg_replace('/use\s+HasRoles\s*,\s*HasPermissions\s*;\r?\n?/', "use Roleable;\n", $content);
 
-            // 2. Update Contracts
+            // Update contract imports
             $content = str_replace(
                 'use AmdadulHaq\Guard\Contracts\Roles as RolesContract;',
                 'use AmdadulHaq\Guard\Contracts\Roleable as RoleableContract;',
@@ -93,27 +90,26 @@ class UpgradeCommand extends Command
                 $content
             );
 
-            // Remove Permissions contract entirely
+            // Permissions contract is no longer used; remove it
             $content = str_replace("use AmdadulHaq\Guard\Contracts\Permissions;\n", '', $content);
             $content = str_replace("use AmdadulHaq\Guard\Contracts\Permissions;", '', $content);
 
-            // Deduplicate the RoleableContract import if both User and Roles were imported originally
+            // De-duplicate RoleableContract import when both User and Roles were originally imported
             $content = preg_replace(
                 "/(use AmdadulHaq\\\\Guard\\\\Contracts\\\\Roleable as RoleableContract;\r?\n){2,}/",
                 "use AmdadulHaq\\Guard\\Contracts\\Roleable as RoleableContract;\n",
                 $content
             );
 
-            // Replace implementation declarations anywhere in the file
+            // Replace old contract aliases in class declarations
             $content = preg_replace('/\bRolesContract\b/', 'RoleableContract', $content);
             $content = preg_replace('/\bUserContract\b/', 'RoleableContract', $content);
 
-            // For 'User' and 'Roles', only match them if they are followed by a comma, opening brace, or end of line
-            // This prevents replacing random uses of the word 'User'
+            // Match 'User' and 'Roles' only in implements clauses to avoid replacing unrelated identifiers
             $content = preg_replace('/(?<=implements\s|,\s)\bUser\b(?=\s*,|\s*\{|\s*$)/', 'RoleableContract', $content);
             $content = preg_replace('/(?<=implements\s|,\s)\bRoles\b(?=\s*,|\s*\{|\s*$)/', 'RoleableContract', $content);
 
-            // Clean up any double RoleableContract caused by previous replacements (e.g. implements User, Roles)
+            // Collapse duplicate RoleableContract in implements list (e.g. implements User, Roles -> both replaced)
             $content = preg_replace('/RoleableContract\s*,\s*RoleableContract/', 'RoleableContract', $content);
 
             if ($content !== $originalContent) {
